@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "X52+x2/yiHc=",
+  "success": true,
+  "projectFilePath": "C:\\Git\\ProjektLabor\\ProjektLabor\\ProjektLabor\\ProjektLabor.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Dawe\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.8\\microsoft.aspnetcore.openapi.9.0.8.nupkg.sha512",
+    "C:\\Users\\Dawe\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
