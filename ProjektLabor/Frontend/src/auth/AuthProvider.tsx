@@ -11,7 +11,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (token) {
       localStorage.setItem(TOKEN_KEY, token)
-      api.get<User>('/api/v1/auth/me').then((r: { data: User }) => setUser(r.data)).catch(() => setUser(null))
+      // backend: GET /api/v1/users/me returns { id, email, fullName, roles }
+      api.get<User>('/api/v1/users/me').then((r: { data: User }) => setUser(r.data)).catch(() => setUser(null))
     } else {
       localStorage.removeItem(TOKEN_KEY)
       setUser(null)

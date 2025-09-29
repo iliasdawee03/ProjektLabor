@@ -7,7 +7,7 @@ type MeDto = { id: string; email: string; fullName?: string; roles: string[] }
 
 export default function ProfilePage() {
   const qc = useQueryClient()
-  const { data, isLoading, error } = useQuery({ queryKey: ['me'], queryFn: async () => (await api.get<MeDto>('/api/v1/auth/me')).data })
+  const { data, isLoading, error } = useQuery({ queryKey: ['me'], queryFn: async () => (await api.get<MeDto>('/api/v1/users/me')).data })
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<{ fullName?: string }>({
     values: { fullName: data?.fullName ?? '' },
@@ -61,7 +61,7 @@ export default function ProfilePage() {
 function ChangePasswordCard() {
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<{ currentPassword: string; newPassword: string }>({})
   const mutation = useMutation({
-    mutationFn: async (payload: { currentPassword: string; newPassword: string }) => api.post('/api/v1/auth/change-password', payload),
+    mutationFn: async (payload: { currentPassword: string; newPassword: string }) => api.post('/api/v1/users/change-password', payload),
     onSuccess: () => {
       toast.success('Jelszó módosítva')
       reset({ currentPassword: '', newPassword: '' })
