@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* App-level tweaks */
+html, body, #root { height: 100%; }
+html { scroll-behavior: smooth; }
+body {
+	background-color: #f8fafc; /* gray-50 */
+	color: #111827; /* gray-900 */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+main a { color: #2563eb; }
+main a:hover { color: #1d4ed8; }
