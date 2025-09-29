@@ -29,7 +29,7 @@ public static class AuthEndpoints
             };
             var result = await userManager.CreateAsync(user, req.Password);
             if (!result.Succeeded)
-                return Results.BadRequest(result.Errors);
+                return Results.BadRequest(string.Join("; ", result.Errors.Select(e => e.Description)));
 
             await userManager.AddToRoleAsync(user, "JobSeeker");
             return Results.Ok();
@@ -48,12 +48,19 @@ public static class AuthEndpoints
             if (!result.Succeeded)
                 return Results.BadRequest();
 
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
                 new Claim(JwtRegisteredClaimNames.AuthTime, DateTime.Now.ToString(CultureInfo.InvariantCulture))
             };
+            var roles = await userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expires = DateTime.Now.AddDays(Convert.ToDouble(configuration["Jwt:ExpireDays"]));
