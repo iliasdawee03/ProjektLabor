@@ -58,26 +58,30 @@ public static class UserEndpoints
             return Results.Ok();
         }).RequireAuthorization();
 
-        // Admin
-        /* TODO
-         (Admin) GET /api/v1/users
-
-            Auth: Admin
-            Query: role?=Admin|Company|JobSeeker, page?, pageSize?
-            Válasz: { items: UserDto[], total }
-
-            (Admin) PATCH /api/v1/users/{id}/roles
-
-            Auth: Admin
-            Body: { roles: string[] }
-            Válasz: 204
-
-            (Admin) PATCH /api/v1/users/{id}/lock
-
-            Auth: Admin
-            Body: { lock: boolean }
-            Válasz: 204 
-         
-         */
+        // Admin endpoints
+        app.MapGet("/api/v1/users", async (
+            UserManager<ApplicationUser> userManager) =>
+        {
+            var users = userManager.Users.ToList();
+            var userDtos = new List<object>();
+            
+            foreach (var user in users)
+            {
+                var roles = await userManager.GetRolesAsync(user);
+                userDtos.Add(new
+                {
+                    id = user.Id,
+                    email = user.Email,
+                    fullName = user.FullName,
+                    roles = roles
+                });
+            }
+            
+            return Results.Ok(new
+            {
+                items = userDtos,
+                total = userDtos.Count
+            });
+        }).RequireAuthorization("AdminPolicy");
     }
 }
