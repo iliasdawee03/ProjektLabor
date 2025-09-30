@@ -5111,33 +5111,25 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Dawe\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "/home/runner/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Git\\ProjektLabor\\ProjektLabor\\ProjektLabor\\ProjektLabor.csproj",
+      "projectUniqueName": "/home/runner/work/ProjektLabor/ProjektLabor/ProjektLabor/ProjektLabor/ProjektLabor.csproj",
       "projectName": "ProjektLabor",
-      "projectPath": "C:\\Git\\ProjektLabor\\ProjektLabor\\ProjektLabor\\ProjektLabor.csproj",
-      "packagesPath": "C:\\Users\\Dawe\\.nuget\\packages\\",
-      "outputPath": "C:\\Git\\ProjektLabor\\ProjektLabor\\ProjektLabor\\obj\\",
+      "projectPath": "/home/runner/work/ProjektLabor/ProjektLabor/ProjektLabor/ProjektLabor/ProjektLabor.csproj",
+      "packagesPath": "/home/runner/.nuget/packages/",
+      "outputPath": "/home/runner/work/ProjektLabor/ProjektLabor/ProjektLabor/ProjektLabor/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Dawe\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/home/runner/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "https://api.nuget.org/v3/index.json": {},
-        "https://git.pemik.hu/api/v4/projects/298/packages/nuget/index.json": {}
+        "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net9.0": {
@@ -5215,7 +5207,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
