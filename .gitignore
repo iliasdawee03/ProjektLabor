@@ -371,3 +371,7 @@ FodyWeavers.xsd
 *.code-workspace
 .vscode-test/
 .history/
+
+# Frontend build artifacts
+**/Frontend/dist/
+**/Frontend/node_modules/
