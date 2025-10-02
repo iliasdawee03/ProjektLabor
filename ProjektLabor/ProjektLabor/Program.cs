@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProjektLabor.Data;
+using ProjektLabor.Services;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
@@ -13,6 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+
+builder.Services.AddScoped<IApplicationService, ApplicationService>();
+builder.Services.AddScoped<IJobService, JobService>();
 
 
 
@@ -99,6 +103,8 @@ var app = builder.Build();
 
 app.UseSwagger();
 
+
+
 using (var scope = app.Services.CreateScope())
 {
     var dbcontext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -127,5 +133,6 @@ app.UseAuthorization();
 
 AuthEndpoints.MapAuthEndpoints(app,builder.Configuration);
 UserEndpoints.MapUserEndpoints(app);
+
 
 app.Run();
