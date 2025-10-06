@@ -1,4 +1,6 @@
-﻿namespace ProjektLabor.Data.Dto
+﻿using ProjektLabor.Data.Entity;
+
+namespace ProjektLabor.Data.Dto
 {
     public class JobDto
     {
@@ -9,7 +11,7 @@
         public string Description { get; set; } = string.Empty;
         public int? SalaryMin { get; set; }
         public int? SalaryMax { get; set; }
-        public string Category { get; set; } = string.Empty;
+        public Category Category { get; set; }
         public DateTime PostedAt { get; set; }
         public bool Approved { get; set; }
         public string? ModerationReason { get; set; }
@@ -34,6 +36,6 @@
         public string Description { get; set; } = string.Empty;
         public int? SalaryMin { get; set; }
         public int? SalaryMax { get; set; }
-        public string Category { get; set; } = string.Empty;
+        public Category Category { get; set; }
     }
 }

@@ -1,5 +1,14 @@
 ﻿namespace ProjektLabor.Data.Entity
 {
+    public enum Category
+    {
+        Informatika,
+        Pénzügy,
+        Értékesítés,
+        Gyártás,
+        Oktatás,
+    }
+
     public class Job
     {
         public int Id { get; set; }
@@ -9,7 +18,7 @@
         public string Location { get; set; } = string.Empty;
         public int? SalaryMin { get; set; }
         public int? SalaryMax { get; set; }
-        public string Category { get; set; } = string.Empty;
+        public Category Category { get; set; }
         public DateTime PostedAt { get; set; }
         public string CompanyId { get; set; } = string.Empty;
         public bool Approved { get; set; } = false;

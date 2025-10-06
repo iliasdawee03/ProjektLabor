@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektLabor.Data.Dto;
+using ProjektLabor.Data.Entity;
 using ProjektLabor.Services;
 using System.Security.Claims;
 
@@ -22,7 +23,7 @@ namespace ProjektLabor.Controller
         public async Task<ActionResult<object>> GetJobs(
             [FromQuery] string? q,
             [FromQuery] string? location,
-            [FromQuery] string? type,
+            [FromQuery] Category? type,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {

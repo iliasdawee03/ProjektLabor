@@ -8,7 +8,7 @@ namespace ProjektLabor.Services
 {
     public interface IJobService
     {
-        Task<(List<JobDto> Items, int Total)> GetJobsAsync(string? q, string? location, string? type, int page, int pageSize);
+        Task<(List<JobDto> Items, int Total)> GetJobsAsync(string? q, string? location, Category? type, int page, int pageSize);
         Task<JobDto?> GetJobByIdAsync(int id);
         Task<CreateJobDto> CreateJobAsync(CreateJobDto dto, string companyId);
         Task<JobDto?> UpdateJobAsync(int id, JobDto dto, string userId, bool isAdmin);
@@ -25,7 +25,7 @@ namespace ProjektLabor.Services
             _context = context;
         }
 
-        public async Task<(List<JobDto> Items, int Total)> GetJobsAsync(string? q, string? location, string? type, int page, int pageSize)
+        public async Task<(List<JobDto> Items, int Total)> GetJobsAsync(string? q, string? location, Category? type, int page, int pageSize)
         {
             var query = _context.Jobs.Where(j => !j.IsArchived).AsQueryable();
 
@@ -33,7 +33,7 @@ namespace ProjektLabor.Services
                 query = query.Where(j => j.Title.Contains(q) || j.Description.Contains(q));
             if (!string.IsNullOrWhiteSpace(location))
                 query = query.Where(j => j.Location == location);
-            if (!string.IsNullOrWhiteSpace(type))
+            if (type is Category)
                 query = query.Where(j => j.Category == type);
 
             int total = await query.CountAsync();
