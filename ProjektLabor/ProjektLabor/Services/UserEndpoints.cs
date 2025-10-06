@@ -19,13 +19,15 @@ public static class UserEndpoints
             UserManager<ApplicationUser> userManager) =>
         {
             var appUser = await userManager.GetUserAsync(user);
+            if (appUser == null) return Results.Unauthorized();
             var roles = await userManager.GetRolesAsync(appUser);
             return Results.Ok(new
             {
                 id = appUser.Id,
                 email = appUser.Email,
                 fullName = appUser.FullName,
-                roles = roles
+                roles = roles,
+                resumePath = appUser.ResumePath
             });
         }).RequireAuthorization();
 
@@ -35,6 +37,7 @@ public static class UserEndpoints
             UserManager<ApplicationUser> userManager) =>
         {
             var appUser = await userManager.GetUserAsync(user);
+            if (appUser == null) return Results.Unauthorized();
             if (!string.IsNullOrEmpty(req.FullName))
                 appUser.FullName = req.FullName;
             await userManager.UpdateAsync(appUser);
@@ -52,6 +55,7 @@ public static class UserEndpoints
             UserManager<ApplicationUser> userManager) =>
         {
             var appUser = await userManager.GetUserAsync(user);
+            if (appUser == null) return Results.Unauthorized();
             var result = await userManager.ChangePasswordAsync(appUser, req.CurrentPassword, req.NewPassword);
             if (!result.Succeeded)
                 return Results.BadRequest(result.Errors);
@@ -64,19 +68,19 @@ public static class UserEndpoints
 
             Auth: Admin
             Query: role?=Admin|Company|JobSeeker, page?, pageSize?
-            Válasz: { items: UserDto[], total }
+            VÃ¡lasz: { items: UserDto[], total }
 
             (Admin) PATCH /api/v1/users/{id}/roles
 
             Auth: Admin
             Body: { roles: string[] }
-            Válasz: 204
+            VÃ¡lasz: 204
 
             (Admin) PATCH /api/v1/users/{id}/lock
 
             Auth: Admin
             Body: { lock: boolean }
-            Válasz: 204 
+            VÃ¡lasz: 204 
          
          */
     }
