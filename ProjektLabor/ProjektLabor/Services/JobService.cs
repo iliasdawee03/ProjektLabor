@@ -27,7 +27,7 @@ namespace ProjektLabor.Services
 
         public async Task<(List<JobDto> Items, int Total)> GetJobsAsync(string? q, string? location, string? type, int page, int pageSize)
         {
-            var query = _context.Jobs.AsQueryable();
+            var query = _context.Jobs.Where(j => !j.IsArchived).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(q))
                 query = query.Where(j => j.Title.Contains(q) || j.Description.Contains(q));
@@ -54,7 +54,8 @@ namespace ProjektLabor.Services
                     Category = j.Category,
                     PostedAt = j.PostedAt,
                     Approved = j.Approved,
-                    ModerationReason = j.ModerationReason
+                    ModerationReason = j.ModerationReason,
+                    CompanyId = j.CompanyId
                 })
                 .ToListAsync();
 
@@ -64,7 +65,7 @@ namespace ProjektLabor.Services
         public async Task<JobDto?> GetJobByIdAsync(int id)
         {
             return await _context.Jobs
-                .Where(j => j.Id == id)
+                .Where(j => j.Id == id && !j.IsArchived)
                 .Select(j => new JobDto
                 {
                     Id = j.Id,
@@ -77,7 +78,8 @@ namespace ProjektLabor.Services
                     Category = j.Category,
                     PostedAt = j.PostedAt,
                     Approved = j.Approved,
-                    ModerationReason = j.ModerationReason
+                    ModerationReason = j.ModerationReason,
+                    CompanyId = j.CompanyId
                 })
                 .FirstOrDefaultAsync();
         }
@@ -137,7 +139,8 @@ namespace ProjektLabor.Services
                 Category = job.Category,
                 PostedAt = job.PostedAt,
                 Approved = job.Approved,
-                ModerationReason = job.ModerationReason
+                ModerationReason = job.ModerationReason,
+                CompanyId = job.CompanyId
             };
         }
 
@@ -147,7 +150,7 @@ namespace ProjektLabor.Services
             if (job == null) return false;
             if (!isAdmin && job.CompanyId != userId) return false;
 
-            _context.Jobs.Remove(job);
+            job.IsArchived = true;
             await _context.SaveChangesAsync();
             return true;
         }
@@ -173,7 +176,8 @@ namespace ProjektLabor.Services
                 Category = job.Category,
                 PostedAt = job.PostedAt,
                 Approved = job.Approved,
-                ModerationReason = job.ModerationReason
+                ModerationReason = job.ModerationReason,
+                CompanyId = job.CompanyId
             };
         }
     }

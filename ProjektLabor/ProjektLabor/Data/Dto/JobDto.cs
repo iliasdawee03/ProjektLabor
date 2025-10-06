@@ -13,6 +13,7 @@
         public DateTime PostedAt { get; set; }
         public bool Approved { get; set; }
         public string? ModerationReason { get; set; }
+        public string CompanyId { get; set; } = string.Empty;
     }
 
     public class JobSearchDto

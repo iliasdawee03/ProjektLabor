@@ -1,12 +1,29 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
-type Job = { id: string; title: string; description: string; location?: string; employmentType?: string; createdAt?: string }
+import { AppLink, Button } from '../components/Button'
+import { Card, CardHeader } from '../components/Card'
+import { useAuth } from '../auth/useAuth'
+import { Centered, Loading } from '../components/Centered'
+import { Alert } from '../components/Alert'
+
+type Job = {
+  id: string
+  title: string
+  description: string
+  location?: string
+  employmentType?: string
+  createdAt?: string
+  companyId?: string
+  isArchived?: boolean
+}
 
 export default function JobsListPage() {
   const [q, setQ] = useState('')
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const { data, isLoading, error } = useQuery({
     queryKey: ['jobs', q],
     queryFn: async () => (await api.get<{ items: Job[]; total: number }>(`/api/v1/jobs`, { params: { q } })).data
@@ -25,26 +42,38 @@ export default function JobsListPage() {
         </div>
       </div>
 
-      {isLoading && (
-        <div className="flex items-center justify-center p-6">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" aria-label="Loading" />
-        </div>
-      )}
-      {error && <div className="text-sm text-red-600">Hiba történt</div>}
+      {isLoading && <Loading />}
+      {error && <Centered><Alert type="error">Hiba történt</Alert></Centered>}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {data?.items?.map(job => (
-          <div key={job.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <div className="mb-2">
-              <h3 className="text-base font-semibold">{job.title}</h3>
-              <p className="text-xs text-gray-600">{`${job.location ?? ''} ${job.employmentType ? '• ' + job.employmentType : ''}`}</p>
-            </div>
-            <p className="line-clamp-3 text-sm text-gray-700">{job.description}</p>
-            <div className="mt-3 text-right">
-              <Link className="text-blue-600 text-sm" to={`/jobs/${job.id}`}>Részletek</Link>
-            </div>
-          </div>
-        ))}
+        {data?.items?.map(job => {
+          const isOwner = user?.roles?.includes('Company') && job.companyId === user.id
+          return (
+            <Card key={job.id} className={job.isArchived ? 'opacity-60' : ''}>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-semibold">{job.title}</h3>
+                  {job.isArchived && <span className="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-2 py-0.5">Archivált</span>}
+                </div>
+              </CardHeader>
+              <div className="p-4">
+                <p className="text-xs text-gray-600">{`${job.location ?? ''} ${job.employmentType ? '• ' + job.employmentType : ''}`}</p>
+                <p className="line-clamp-3 text-sm text-gray-700 mt-2">{job.description}</p>
+                <div className="mt-3 flex gap-2 justify-end">
+                  <AppLink href={`/jobs/${job.id}`} variant="primary" className="text-sm">Részletek</AppLink>
+                  {isOwner && (
+                    <Button
+                      variant="secondary"
+                      className="text-sm"
+                      onClick={() => navigate(`/jobs/${job.id}/edit`)}
+                      disabled={job.isArchived}
+                    >Szerkesztés</Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )
+        })}
       </div>
     </div>
   )

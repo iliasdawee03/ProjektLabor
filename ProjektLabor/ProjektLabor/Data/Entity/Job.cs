@@ -15,5 +15,6 @@
         public bool Approved { get; set; } = false;
         public string? ModerationReason { get; set; }
         public ICollection<Application> Applications { get; set; } = new List<Application>();
+        public bool IsArchived { get; set; } = false;
     }
 }
