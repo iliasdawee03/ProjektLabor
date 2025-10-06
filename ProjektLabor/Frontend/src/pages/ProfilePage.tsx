@@ -2,8 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import CVUpload from '../components/CVUpload'
 
-type MeDto = { id: string; email: string; fullName?: string; roles: string[] }
+type MeDto = { id: string; email: string; fullName?: string; roles: string[]; resumePath?: string }
 
 export default function ProfilePage() {
   const qc = useQueryClient()
@@ -49,6 +50,12 @@ export default function ProfilePage() {
               <div className="text-sm text-gray-600">Szerepek</div>
               <div className="text-sm">{data?.roles?.join(', ')}</div>
             </div>
+            <CVUpload
+              resumePath={data?.resumePath}
+              onUpload={() => qc.invalidateQueries({ queryKey: ['me'] })}
+              label="Önéletrajz feltöltése"
+              className="mt-4"
+            />
           </div>
         </div>
       </div>
@@ -56,7 +63,10 @@ export default function ProfilePage() {
       <ChangePasswordCard />
     </div>
   )
+
 }
+
+
 
 function ChangePasswordCard() {
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<{ currentPassword: string; newPassword: string }>({})
