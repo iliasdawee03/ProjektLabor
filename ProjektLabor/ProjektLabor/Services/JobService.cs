@@ -110,7 +110,6 @@ namespace ProjektLabor.Services
             {
                 return null;
             }
-            ;
             if (!isAdmin && job.CompanyId != userId)
             {
                 return null;
