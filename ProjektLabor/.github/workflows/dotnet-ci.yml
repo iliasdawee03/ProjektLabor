@@ -3,13 +3,14 @@
 name: .NET CI
 
 # Controls when the action will run. 
-# This action runs on pull requests targeting the main branch.
 on:
+  # 'workflow_dispatch', 'push', and 'pull_request' are now correctly aligned.
   workflow_dispatch:
+
   push:
     branches: [ main, master, 11-unit-tests, Test-Branch-For-CI ]
+
   pull_request:
-    #11-unit-tests is only for testing purposes, it will be removed later
     branches: [ main, master, 11-unit-tests ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -42,3 +43,4 @@ jobs:
     # 5. Runs all tests found in the solution
     - name: Test
       run: dotnet test ./ProjektLabor.sln --no-build --verbosity normal --configuration Release
+
