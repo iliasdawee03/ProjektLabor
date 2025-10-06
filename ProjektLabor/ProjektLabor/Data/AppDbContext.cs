@@ -8,8 +8,8 @@ namespace ProjektLabor.Data
     public class AppDbContext(DbContextOptions<AppDbContext> options)
         : IdentityDbContext<ApplicationUser>(options)
     {
-        public DbSet<Job> Jobs { get; set; }
-        public DbSet<Application> Applications { get; set; }
+        public virtual DbSet<Job> Jobs { get; set; }
+        public virtual DbSet<Application> Applications { get; set; }
 
         override protected void OnModelCreating(ModelBuilder builder)
         {
