@@ -371,3 +371,52 @@ FodyWeavers.xsd
 *.code-workspace
 .vscode-test/
 .history/
+
+
+# Ignore project.json files, which are now replaced by package references in .csproj
+project.json
+project.lock.json
+
+# Ignore the obj folder, which contains intermediate build files
+**/[Oo]bj/
+
+# Ignore the bin folder, which contains the compiled output
+**/[Bb]in/
+
+# Ignore user-specific files
+*.user
+*.userprefs
+
+# Ignore Resharper files
+*.resharper
+_ReSharper*
+
+# Ignore Rider files
+.idea/
+*.sln.iml
+
+# User-uploaded content
+Uploads/
+
+# Frontend specific
+/Frontend/node_modules
+/Frontend/dist
+/Frontend/.env*
+
+# === ADDED REACT / JS RULES START HERE ===
+
+# Common build output folder (e.g., from Create React App)
+/build
+
+# Next.js build output
+.next/
+.out/
+
+# Yarn Plug'n'Play files
+/.pnp
+.pnp.js
+
+# Dependency manager log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
