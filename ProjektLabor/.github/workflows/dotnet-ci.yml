@@ -6,7 +6,8 @@ name: .NET CI
 # This action runs on pull requests targeting the main branch.
 on:
   workflow_dispatch:
-
+  push:
+    branches: [ main, master, 11-unit-tests, Test-Branch-For-CI ]
   pull_request:
     #11-unit-tests is only for testing purposes, it will be removed later
     branches: [ main, master, 11-unit-tests ]
