@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import toast from 'react-hot-toast'
+import { toMessage } from '../lib/errors'
 
 
 
@@ -63,8 +64,8 @@ export default function CVUpload({ resumePath, onUpload, label = 'Önéletrajz f
       toast.success('Önéletrajz feltöltve!')
       setFile(null)
       onUpload?.()
-    } catch (err: any) {
-      setError(err?.response?.data || 'Hiba történt a feltöltéskor')
+    } catch (err: unknown) {
+      setError(toMessage(err))
     } finally {
       setUploading(false)
     }
@@ -111,7 +112,7 @@ export default function CVUpload({ resumePath, onUpload, label = 'Önéletrajz f
                     window.URL.revokeObjectURL(url);
                     document.body.removeChild(a);
                   }, 100);
-                } catch (e) {
+                } catch {
                   toast.error('Nem sikerült letölteni a fájlt');
                 }
               }}
@@ -132,7 +133,7 @@ export default function CVUpload({ resumePath, onUpload, label = 'Önéletrajz f
                   const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
                   window.open(url, '_blank');
                   setTimeout(() => window.URL.revokeObjectURL(url), 10000);
-                } catch (e) {
+                } catch {
                   toast.error('Nem sikerült megnyitni a fájlt');
                 }
               }}

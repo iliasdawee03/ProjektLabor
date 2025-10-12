@@ -4,12 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '../auth/useAuth'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
+import { toMessage } from '../lib/errors'
 
 
 import { AppLink, Button } from '../components/Button'
 import { Card, CardHeader } from '../components/Card'
 import { TextInput } from '../components/TextInput'
-import { Alert } from '../components/Alert'
 
 const schema = z.object({
   fullName: z.string().min(2),
@@ -33,12 +33,7 @@ export default function RegisterPage() {
       toast.success('Sikeres regisztráció')
       navigate('/')
     } catch (err: unknown) {
-      let message = 'Regisztráció sikertelen'
-      if (typeof err === 'object' && err && 'response' in err) {
-        const resp = (err as { response?: { data?: unknown } }).response
-        if (resp?.data && typeof resp.data === 'string') message = resp.data
-      }
-      toast.error(message)
+      toast.error(toMessage(err))
     }
   }
 

@@ -1,9 +1,11 @@
+import React from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '../auth/useAuth'
 import toast from 'react-hot-toast'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { toMessage } from '../lib/errors'
 
 
 import { AppLink, Button } from '../components/Button'
@@ -28,6 +30,7 @@ export default function LoginPage() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema)
   })
+  let formError: string | null = null
 
   const onSubmit = async (values: FormValues) => {
     try {
@@ -35,12 +38,11 @@ export default function LoginPage() {
       toast.success('Sikeres bejelentkezés')
       navigate(from, { replace: true })
     } catch (err: unknown) {
-      let message = 'Bejelentkezés sikertelen'
-      if (typeof err === 'object' && err && 'response' in err) {
-        const resp = (err as { response?: { data?: unknown } }).response
-        if (resp?.data && typeof resp.data === 'string') message = resp.data
-      }
-      toast.error(message)
+      const e = err as { response?: { status?: number } }
+      formError = (e?.response?.status === 400 || e?.response?.status === 401)
+        ? 'Hibás email vagy jelszó'
+        : toMessage(err)
+      toast.error(formError)
     }
   }
 
@@ -64,8 +66,7 @@ export default function LoginPage() {
               {...register('password')}
               error={errors.password?.message}
             />
-            {/* Globális hibaüzenet, késöbb */}
-            {/* {formError && <Alert type="error">{formError}</Alert>} */}
+            {formError && <Alert type="error">{formError}</Alert>}
             <Button type="submit" variant="primary" disabled={isSubmitting}>Belépés</Button>
           </form>
           <p className="mt-4 text-sm">Még nincs fiókod? <AppLink href="/register" variant="link" className="text-blue-600">Regisztráció</AppLink></p>

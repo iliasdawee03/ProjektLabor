@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import { toMessage } from '../lib/errors'
 import { Button } from '../components/Button'
 import { Card, CardHeader } from '../components/Card'
 import { TextInput } from '../components/TextInput'
@@ -85,8 +86,8 @@ export default function ProfilePage() {
         reset()
         await qc.invalidateQueries({ queryKey: ['me'] })
       },
-      onError: (err: any) => {
-        toast.error(err?.response?.data?.message || 'Hiba történt')
+      onError: (err: unknown) => {
+        toast.error(toMessage(err))
       }
     })
     return (

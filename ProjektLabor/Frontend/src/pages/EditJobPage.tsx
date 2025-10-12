@@ -1,4 +1,5 @@
 import React from 'react'
+import CategorySelect from '../components/CategorySelect'
 
 import { Button } from '../components/Button'
 import { Card, CardHeader } from '../components/Card'
@@ -12,6 +13,7 @@ import { api } from '../lib/api'
 import { useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuth } from '../auth/useAuth'
+import { toMessage } from '../lib/errors'
 
 interface FormValues {
   title: string
@@ -58,8 +60,8 @@ export default function EditJobPage() {
       qc.invalidateQueries({ queryKey: ['company-jobs'] })
       navigate('/company/jobs')
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data || 'Hiba történt a mentéskor')
+    onError: (err: unknown) => {
+      toast.error(toMessage(err))
     }
   })
 
@@ -112,11 +114,12 @@ export default function EditJobPage() {
               error={errors.location?.message}
               disabled={data.isArchived}
             />
-            <TextInput
+            <CategorySelect
               label="Kategória*"
+              defaultValue={data.category}
+              disabled={data.isArchived}
               {...register('category', { required: 'Kötelező' })}
               error={errors.category?.message}
-              disabled={data.isArchived}
             />
             <div className="flex gap-4">
               <div className="flex-1">
@@ -137,7 +140,7 @@ export default function EditJobPage() {
               </div>
             </div>
             {mutation.isError && (
-              <Alert type="error">{mutation.error?.response?.data || 'Hiba történt a mentéskor'}</Alert>
+              <Alert type="error">{toMessage(mutation.error)}</Alert>
             )}
             <div className="flex gap-2 mt-4">
               <Button

@@ -11,10 +11,13 @@ import { Alert } from '../components/Alert'
 import { Centered, Loading } from '../components/Centered'
 import toast from 'react-hot-toast'
 import { useAuth } from '../auth/useAuth'
+import CategorySelect from '../components/CategorySelect'
+import { toMessage } from '../lib/errors'
 
 interface FormValues {
   title: string
   description: string
+  company: string
   location: string
   category: string
   salaryMin?: number
@@ -28,6 +31,7 @@ export default function CreateJobPage() {
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>()
 
+
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
       await api.post('/api/v1/jobs', values)
@@ -37,11 +41,12 @@ export default function CreateJobPage() {
       qc.invalidateQueries({ queryKey: ['jobs'] })
       navigate('/company/jobs')
     },
-    onError: (err: any) => {
-      if (err?.response?.status === 401 || err?.response?.status === 403) {
+    onError: (err: unknown) => {
+      const e = err as { response?: { status?: number } }
+      if (e?.response?.status === 401 || e?.response?.status === 403) {
         toast.error('Csak cégként lehet állást feladni!')
       } else {
-        toast.error(err?.response?.data || 'Hiba történt a mentéskor')
+        toast.error(toMessage(err))
       }
     }
   })
@@ -70,12 +75,18 @@ export default function CreateJobPage() {
               error={errors.description?.message}
             />
             <TextInput
+              label="Cég neve*"
+              {...register('company', { required: 'Kötelező' })}
+              error={errors.company?.message}
+            />
+            <TextInput
               label="Helyszín*"
               {...register('location', { required: 'Kötelező' })}
               error={errors.location?.message}
             />
-            <TextInput
+            <CategorySelect
               label="Kategória*"
+              defaultValue=""
               {...register('category', { required: 'Kötelező' })}
               error={errors.category?.message}
             />

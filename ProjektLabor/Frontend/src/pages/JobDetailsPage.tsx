@@ -8,6 +8,7 @@ import { useAuth } from '../auth/useAuth'
 import { Centered, Loading } from '../components/Centered'
 import { Alert } from '../components/Alert'
 import toast from 'react-hot-toast'
+import { toMessage } from '../lib/errors'
 
 
 type Job = {
@@ -48,8 +49,8 @@ export default function JobDetailsPage() {
       toast.success('Jelentkezés elküldve!')
       qc.invalidateQueries({ queryKey: ['me'] })
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data || err?.message || 'Hiba történt a jelentkezéskor')
+    onError: (err: unknown) => {
+      toast.error(toMessage(err))
     }
   })
 
