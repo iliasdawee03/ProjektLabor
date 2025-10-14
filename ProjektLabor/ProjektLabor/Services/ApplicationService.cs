@@ -35,11 +35,16 @@ namespace ProjektLabor.Services
             _context.Applications.Add(application);
             await _context.SaveChangesAsync();
 
+            var jobTitle = await _context.Jobs.Where(j => j.Id == application.JobId).Select(j => j.Title).FirstOrDefaultAsync();
+
             return new ApplicationDto
             {
                 Id = application.Id,
                 JobId = application.JobId,
+                JobTitle = jobTitle,
                 UserId = application.UserId,
+                ApplicantName = _context.Users.Where(u => u.Id == application.UserId).Select(u => u.FullName).FirstOrDefault(),
+                ApplicantEmail = _context.Users.Where(u => u.Id == application.UserId).Select(u => u.Email).FirstOrDefault(),
                 ResumeId = application.ResumeId,
                 AppliedAt = application.AppliedAt,
                 Status = application.Status
@@ -70,7 +75,10 @@ namespace ProjektLabor.Services
                 {
                     Id = a.Id,
                     JobId = a.JobId,
+                    JobTitle = a.Job.Title,
                     UserId = a.UserId,
+                    ApplicantName = _context.Users.Where(u => u.Id == a.UserId).Select(u => u.FullName).FirstOrDefault(),
+                    ApplicantEmail = _context.Users.Where(u => u.Id == a.UserId).Select(u => u.Email).FirstOrDefault(),
                     ResumeId = a.ResumeId,
                     AppliedAt = a.AppliedAt,
                     Status = a.Status
@@ -93,7 +101,10 @@ namespace ProjektLabor.Services
                 {
                     Id = a.Id,
                     JobId = a.JobId,
+                    JobTitle = a.Job.Title,
                     UserId = a.UserId,
+                    ApplicantName = _context.Users.Where(u => u.Id == a.UserId).Select(u => u.FullName).FirstOrDefault(),
+                    ApplicantEmail = _context.Users.Where(u => u.Id == a.UserId).Select(u => u.Email).FirstOrDefault(),
                     ResumeId = a.ResumeId,
                     AppliedAt = a.AppliedAt,
                     Status = a.Status
@@ -128,6 +139,8 @@ namespace ProjektLabor.Services
                 Id = application.Id,
                 JobId = application.JobId,
                 UserId = application.UserId,
+                ApplicantName = _context.Users.Where(u => u.Id == application.UserId).Select(u => u.FullName).FirstOrDefault(),
+                ApplicantEmail = _context.Users.Where(u => u.Id == application.UserId).Select(u => u.Email).FirstOrDefault(),
                 ResumeId = application.ResumeId,
                 AppliedAt = application.AppliedAt,
                 Status = application.Status

@@ -8,10 +8,16 @@ using ProjektLabor.Services;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(o =>
+{
+    // Enumok JSON-ben stringként menjenek (pl. "Informatika"), ne számként (0)
+    o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
 builder.Services.AddEndpointsApiExplorer();
 
 
@@ -113,22 +119,17 @@ using (var scope = app.Services.CreateScope())
 
     // Adat feltöltő
     await DbSeeder.SeedAsync(app.Services);
-
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project API v1"));
 }
 
-app.MapControllers();
-
 app.UseHttpsRedirection();
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project API v1"));
 app.UseCors("AllowAllOrigins");
-
-
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapControllers();
 AuthEndpoints.MapAuthEndpoints(app,builder.Configuration);
 UserEndpoints.MapUserEndpoints(app);
-
 
 app.Run();

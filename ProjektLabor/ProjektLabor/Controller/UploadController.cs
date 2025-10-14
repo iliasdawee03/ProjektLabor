@@ -35,10 +35,41 @@ namespace ProjektLabor.Controller
 
         [HttpGet("{filename}")]
         [Authorize]
-        public async Task<IActionResult> DownloadFile(string filename, [FromServices] UserManager<ApplicationUser> userManager)
+        public async Task<IActionResult> DownloadFile(
+            string filename,
+            [FromServices] UserManager<ApplicationUser> userManager,
+            [FromServices] AppDbContext db)
         {
-            var user = await userManager.GetUserAsync(User);
-            if (user == null || user.ResumePath != filename)
+            var currentUser = await userManager.GetUserAsync(User);
+            if (currentUser == null)
+                return Unauthorized();
+
+            bool allowed = false;
+            // 1) Saját önéletrajz
+            if (currentUser.ResumePath == filename)
+            {
+                allowed = true;
+            }
+            else if (User.IsInRole("Admin"))
+            {
+                // 2) Admin mindig hozzáférhet
+                allowed = true;
+            }
+            else if (User.IsInRole("Company"))
+            {
+                // 3) Cég: akkor fér hozzá, ha a fájl egy olyan jelentkezéshez tartozik,
+                // amely az ő álláshirdetésére érkezett
+                var app = db.Applications
+                    .Where(a => a.ResumeId == filename)
+                    .Select(a => new { a.JobId, CompanyId = a.Job.CompanyId })
+                    .FirstOrDefault();
+                if (app != null && app.CompanyId == currentUser.Id)
+                {
+                    allowed = true;
+                }
+            }
+
+            if (!allowed)
                 return Forbid();
 
             var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");

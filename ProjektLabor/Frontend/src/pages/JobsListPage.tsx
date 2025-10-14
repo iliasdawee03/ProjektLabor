@@ -21,11 +21,17 @@ type Job = {
   employmentType?: string
   createdAt?: string
   companyId?: string
-  category?: string
+  category?: string | number
   isArchived?: boolean
 }
 
 export default function JobsListPage() {
+  const CATEGORY_LABELS = ['Informatika', 'Pénzügy', 'Értékesítés', 'Gyártás', 'Oktatás'] as const
+  const formatCategory = (c: unknown) => {
+    if (typeof c === 'number') return CATEGORY_LABELS[c] ?? String(c)
+    if (typeof c === 'string') return c
+    return ''
+  }
   const [q, setQ] = useState('')
   const [category, setCategory] = useState<string>('')
   const [page, setPage] = useState(1)
@@ -83,7 +89,9 @@ export default function JobsListPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     {/* category badge if available via job.employmentType or future category */}
-                    {job.category && <Badge variant="purple">{job.category}</Badge>}
+                    {job.category !== undefined && job.category !== null && (
+                      <Badge variant="purple">{formatCategory(job.category)}</Badge>
+                    )}
                     {job.isArchived && <Badge variant="yellow">Archivált</Badge>}
                   </div>
                 </CardHeader>

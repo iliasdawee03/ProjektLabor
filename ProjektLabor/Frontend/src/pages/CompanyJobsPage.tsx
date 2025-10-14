@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
@@ -10,14 +10,18 @@ import { Centered, Loading } from '../components/Centered'
 import { Alert } from '../components/Alert'
 import CategorySelect from '../components/CategorySelect'
 import Badge from '../components/Badge'
-import toast from 'react-hot-toast'
-import { toMessage } from '../lib/errors'
 import { formatDate, truncate } from '../lib/format'
 
 export default function CompanyJobsPage() {
   const { user } = useAuth()
-  const qc = useQueryClient()
+
   const navigate = useNavigate()
+  const CATEGORY_LABELS = ['Informatika', 'Pénzügy', 'Értékesítés', 'Gyártás', 'Oktatás'] as const
+  const formatCategory = (c: unknown) => {
+    if (typeof c === 'number') return CATEGORY_LABELS[c] ?? String(c)
+    if (typeof c === 'string') return c
+    return ''
+  }
   const [q, setQ] = useState('')
   const [category, setCategory] = useState('')
   const [showArchived, setShowArchived] = useState(true)
@@ -28,16 +32,7 @@ export default function CompanyJobsPage() {
     enabled: !!user?.roles?.includes('Company')
   })
 
-  const archiveMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await api.delete(`/api/v1/jobs/${id}`)
-    },
-    onSuccess: () => {
-      toast.success('Álláshirdetés archiválva')
-      qc.invalidateQueries({ queryKey: ['company-jobs'] })
-    },
-    onError: (err: unknown) => toast.error(toMessage(err))
-  })
+
 
   if (!user?.roles?.includes('Company')) {
     return <Centered><Alert type="error">Csak cégként érhető el!</Alert></Centered>;
@@ -95,24 +90,28 @@ export default function CompanyJobsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {job.category && <Badge variant="purple">{job.category}</Badge>}
+                  {job.category !== undefined && job.category !== null && (
+                    <Badge variant="purple">{formatCategory(job.category)}</Badge>
+                  )}
                   {job.isArchived && <Badge variant="yellow">Archivált</Badge>}
                 </div>
               </CardHeader>
               <div className="p-4">
                 <p className="line-clamp-3 text-sm text-gray-700">{truncate(job.description, 240)}</p>
-                <div className="mt-3 flex gap-2 justify-end">
-                  <AppLink href={`/jobs/${job.id}`} variant="primary">Részletek</AppLink>
+                <div className="mt-3 flex items-center gap-2">
+                  <Button
+                    variant="primary"
+                    onClick={() => navigate(`/jobs/${job.id}`)}
+                  >Részletek</Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => navigate(`/jobs/${job.id}/applicants`)}
+                  >Jelentkezők</Button>
                   <Button
                     variant="secondary"
                     onClick={() => navigate(`/jobs/${job.id}/edit`)}
                     disabled={job.isArchived}
                   >Szerkesztés</Button>
-                  <Button
-                    variant="danger"
-                    onClick={() => archiveMutation.mutate(job.id)}
-                    disabled={job.isArchived || archiveMutation.isPending}
-                  >Archiválás</Button>
                 </div>
               </div>
             </Card>
@@ -134,7 +133,7 @@ type Job = {
   location: string
   salaryMin?: number
   salaryMax?: number
-  category: string
+  category: string | number
   postedAt: string
   approved: boolean
   moderationReason?: string

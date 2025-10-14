@@ -10,11 +10,8 @@ import JobDetailsPage from './pages/JobDetailsPage.tsx'
 import CreateJobPage from './pages/CreateJobPage'
 import CompanyJobsPage from './pages/CompanyJobsPage'
 import EditJobPage from './pages/EditJobPage'
-          <Route path="/jobs/:id/edit" element={
-            <ProtectedRoute roles={['Company']}>
-              <EditJobPage />
-            </ProtectedRoute>
-          } />
+import MyApplicationsPage from './pages/MyApplicationsPage'
+import JobApplicantsPage from './pages/JobApplicantsPage'
 
 function App() {
   const { user, token, logout } = useAuth()
@@ -28,6 +25,9 @@ function App() {
             <nav className="hidden md:flex items-center gap-4 text-sm text-gray-700">
               <Link to="/" className="hover:text-gray-900">Kezdőlap</Link>
               <Link to="/jobs" className="hover:text-gray-900">Állások</Link>
+              {user && (
+                <Link to="/applications/me" className="hover:text-gray-900">Jelentkezéseim</Link>
+              )}
               {user?.roles?.includes('Company') && (
                 <>
                   <Link to="/company/jobs" className="hover:text-gray-900">Cég hirdetései</Link>
@@ -72,9 +72,19 @@ function App() {
               <EditJobPage />
             </ProtectedRoute>
           } />
+          <Route path="/jobs/:id/applicants" element={
+            <ProtectedRoute roles={['Company','Admin']}>
+              <JobApplicantsPage />
+            </ProtectedRoute>
+          } />
           <Route path="/profile" element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/applications/me" element={
+            <ProtectedRoute>
+              <MyApplicationsPage />
             </ProtectedRoute>
           } />
           <Route path="/jobs/create" element={

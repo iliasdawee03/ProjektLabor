@@ -9,6 +9,8 @@ import { Centered, Loading } from '../components/Centered'
 import { Alert } from '../components/Alert'
 import toast from 'react-hot-toast'
 import { toMessage } from '../lib/errors'
+import Badge from '../components/Badge'
+import { formatDate } from '../lib/format'
 
 
 type Job = {
@@ -22,6 +24,7 @@ type Job = {
   isArchived?: boolean
 }
 type MeDto = { id: string; email: string; fullName?: string; roles: string[]; resumePath?: string }
+type MyApp = { id: number; jobId: number; appliedAt: string; status: 'received' | 'inReview' | 'rejected' | 'accepted' | string }
 
 export default function JobDetailsPage() {
   const { id } = useParams<{ id: string }>()
@@ -40,6 +43,13 @@ export default function JobDetailsPage() {
     enabled: !!user
   })
 
+  // Check if already applied to this job
+  const { data: myApps, isLoading: appsLoading } = useQuery({
+    queryKey: ['my-app-for-job', id],
+    enabled: !!user && !!id && user.roles.includes('JobSeeker'),
+    queryFn: async () => (await api.get<{ items: MyApp[]; total: number }>(`/api/v1/applications/me`, { params: { page: 1, pageSize: 100 } })).data,
+  })
+
   const mutation = useMutation({
     mutationFn: async () => {
       if (!id || !me?.resumePath) throw new Error('Nincs feltöltött önéletrajz!')
@@ -48,17 +58,46 @@ export default function JobDetailsPage() {
     onSuccess: () => {
       toast.success('Jelentkezés elküldve!')
       qc.invalidateQueries({ queryKey: ['me'] })
+      qc.invalidateQueries({ queryKey: ['my-applications'] })
+      if (id) qc.invalidateQueries({ queryKey: ['my-app-for-job', id] })
     },
     onError: (err: unknown) => {
       toast.error(toMessage(err))
     }
   })
 
-  if (isLoading || meLoading) return <Loading />;
+  const archiveMutation = useMutation({
+    mutationFn: async () => {
+      if (!id) throw new Error('Hiányzó azonosító')
+      await api.delete(`/api/v1/jobs/${id}`)
+    },
+    onSuccess: () => {
+      toast.success('Álláshirdetés archiválva')
+      if (id) qc.invalidateQueries({ queryKey: ['job', id] })
+      qc.invalidateQueries({ queryKey: ['company-jobs'] })
+      navigate('/company/jobs')
+    },
+    onError: (err: unknown) => toast.error(toMessage(err))
+  })
+
+  if (isLoading || meLoading || appsLoading) return <Loading />;
   if (error || !data) return <Centered><Alert type="error">Nem található</Alert></Centered>;
 
   const isOwner = user?.roles?.includes('Company') && data.companyId === user.id
   const canApply = user && user.roles.includes('JobSeeker')
+  const existing = myApps?.items?.find(a => String(a.jobId) === String(id))
+
+  const statusBadge = (status?: string) => {
+    if (!status) return null
+    const map: Record<string, { label: string; variant: 'gray' | 'blue' | 'green' | 'yellow' | 'red' | 'purple' }> = {
+      received: { label: 'Beérkezett', variant: 'blue' },
+      inReview: { label: 'Folyamatban', variant: 'purple' },
+      accepted: { label: 'Elfogadva', variant: 'green' },
+      rejected: { label: 'Elutasítva', variant: 'red' },
+    }
+    const cfg = map[status] ?? { label: status, variant: 'gray' as const }
+    return <Badge variant={cfg.variant}>{cfg.label}</Badge>
+  }
 
   return (
     <Card>
@@ -85,11 +124,27 @@ export default function JobDetailsPage() {
                 onClick={() => navigate(`/jobs/${data.id}/edit`)}
                 disabled={data.isArchived}
               >Szerkesztés</Button>
-              <AppLink href="/company/jobs" variant="primary" className="text-sm bg-blue-50 text-blue-700 hover:bg-blue-100">Saját állások</AppLink>
+              <Button
+                variant="primary"
+                className="text-sm"
+                onClick={() => navigate(`/jobs/${data.id}/applicants`)}
+              >Jelentkezők</Button>
+              {!data.isArchived && (
+                <Button
+                  variant="danger"
+                  className="text-sm"
+                  disabled={archiveMutation.status === 'pending'}
+                  onClick={() => {
+                    if (confirm('Biztosan archiválod ezt az állást?')) {
+                      archiveMutation.mutate()
+                    }
+                  }}
+                >Archiválás</Button>
+              )}
             </>
           )}
         </div>
-        {canApply && !data.isArchived && (
+        {canApply && !data.isArchived && !existing && (
           <div className="mt-6">
             <Button
               variant="primary"
@@ -102,6 +157,18 @@ export default function JobDetailsPage() {
             {!me?.resumePath && (
               <div className="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-3 py-2 mt-2">Előbb tölts fel önéletrajzot a profilodban!</div>
             )}
+          </div>
+        )}
+        {canApply && !data.isArchived && existing && (
+          <div className="mt-6 rounded border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {statusBadge(existing.status)}
+                <span>Már jelentkeztél erre az állásra.</span>
+              </div>
+              <AppLink href="/applications/me" variant="secondary">Jelentkezéseim</AppLink>
+            </div>
+            <div className="mt-1 text-xs text-blue-900">Beküldve: {formatDate(existing.appliedAt)}</div>
           </div>
         )}
       </div>
