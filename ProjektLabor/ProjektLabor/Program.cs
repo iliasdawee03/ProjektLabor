@@ -8,10 +8,17 @@ using ProjektLabor.Services;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+// Accept enum values by their string names in JSON bodies (e.g. "Informatika").
+// System.Text.Json by default expects numeric values for enums; enabling
+// JsonStringEnumConverter makes model binding accept string names as well.
+builder.Services.AddControllers().AddJsonOptions(opts =>
+{
+    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 builder.Services.AddEndpointsApiExplorer();
 
 
