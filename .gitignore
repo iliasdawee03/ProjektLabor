@@ -285,6 +285,16 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
+# Frontend build output
+ProjektLabor/Frontend/dist/
+
+# Backend build outputs (redundant with [Bb]in/ and [Oo]bj/ but explicit paths for clarity)
+ProjektLabor/ProjektLabor/bin/
+ProjektLabor/ProjektLabor/obj/
+
+# Runtime/uploads (do not version-control user-uploaded files)
+ProjektLabor/ProjektLabor/Uploads/
+
 # Visual Studio 6 build log
 *.plg
 
@@ -371,3 +381,7 @@ FodyWeavers.xsd
 *.code-workspace
 .vscode-test/
 .history/
+
+# Frontend build artifacts
+**/Frontend/dist/
+**/Frontend/node_modules/
