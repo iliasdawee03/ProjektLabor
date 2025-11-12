@@ -7,6 +7,11 @@ import ProfilePage from './pages/ProfilePage.tsx'
 import AdminUsersPage from './pages/AdminUsersPage.tsx'
 import JobsListPage from './pages/JobsListPage.tsx'
 import JobDetailsPage from './pages/JobDetailsPage.tsx'
+import CreateJobPage from './pages/CreateJobPage'
+import CompanyJobsPage from './pages/CompanyJobsPage'
+import EditJobPage from './pages/EditJobPage'
+import MyApplicationsPage from './pages/MyApplicationsPage'
+import JobApplicantsPage from './pages/JobApplicantsPage'
 
 function App() {
   const { user, token, logout } = useAuth()
@@ -20,8 +25,14 @@ function App() {
             <nav className="hidden md:flex items-center gap-4 text-sm text-gray-700">
               <Link to="/" className="hover:text-gray-900">Kezdőlap</Link>
               <Link to="/jobs" className="hover:text-gray-900">Állások</Link>
+              {user && (
+                <Link to="/applications/me" className="hover:text-gray-900">Jelentkezéseim</Link>
+              )}
               {user?.roles?.includes('Company') && (
-                <Link to="/company/jobs" className="hover:text-gray-900">Cég hirdetései</Link>
+                <>
+                  <Link to="/company/jobs" className="hover:text-gray-900">Cég hirdetései</Link>
+                  <Link to="/jobs/create" className="hover:text-gray-900 font-semibold text-blue-700">Új állás feladása</Link>
+                </>
               )}
               {user?.roles?.includes('Admin') && (
                 <Link to="/admin/users" className="hover:text-gray-900">Admin</Link>
@@ -32,12 +43,12 @@ function App() {
             {!token ? (
               <>
                 <Link to="/login" className="inline-flex items-center justify-center rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-900 shadow hover:bg-gray-300">Bejelentkezés</Link>
-                      <Link
-                        to="/register"
-                        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:text-white focus:text-white active:text-white visited:text-white shadow hover:bg-blue-700"
-                      >
-                        Regisztráció
-                      </Link>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:text-white focus:text-white active:text-white visited:text-white shadow hover:bg-blue-700"
+                >
+                  Regisztráció
+                </Link>
               </>
             ) : (
               <div className="flex items-center gap-3">
@@ -56,9 +67,34 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/jobs" element={<JobsListPage />} />
           <Route path="/jobs/:id" element={<JobDetailsPage />} />
+          <Route path="/jobs/:id/edit" element={
+            <ProtectedRoute roles={['Company']}>
+              <EditJobPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/jobs/:id/applicants" element={
+            <ProtectedRoute roles={['Company','Admin']}>
+              <JobApplicantsPage />
+            </ProtectedRoute>
+          } />
           <Route path="/profile" element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/applications/me" element={
+            <ProtectedRoute>
+              <MyApplicationsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/jobs/create" element={
+            <ProtectedRoute roles={['Company']}>
+              <CreateJobPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/company/jobs" element={
+            <ProtectedRoute roles={['Company']}>
+              <CompanyJobsPage />
             </ProtectedRoute>
           } />
           <Route path="/dashboard" element={

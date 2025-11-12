@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using ProjektLabor.Data.Entity;
 
 namespace ProjektLabor.Data
 {
     public class AppDbContext(DbContextOptions<AppDbContext> options)
         : IdentityDbContext<ApplicationUser>(options)
     {
-        
+        public DbSet<Job> Jobs { get; set; }
+        public DbSet<Application> Applications { get; set; }
+
         override protected void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -19,7 +22,5 @@ namespace ProjektLabor.Data
 
             builder.HasDefaultSchema("Identity");
         }
-
     }
 }
-    

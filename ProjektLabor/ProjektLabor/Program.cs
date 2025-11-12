@@ -4,14 +4,26 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProjektLabor.Data;
+using ProjektLabor.Services;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+// Accept enum values by their string names in JSON bodies (e.g. "Informatika").
+// System.Text.Json by default expects numeric values for enums; enabling
+// JsonStringEnumConverter makes model binding accept string names as well.
+builder.Services.AddControllers().AddJsonOptions(opts =>
+{
+    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 builder.Services.AddEndpointsApiExplorer();
+
+
+builder.Services.AddScoped<IApplicationService, ApplicationService>();
+builder.Services.AddScoped<IJobService, JobService>();
 
 
 
@@ -98,30 +110,26 @@ var app = builder.Build();
 
 app.UseSwagger();
 
+
+
+
 using (var scope = app.Services.CreateScope())
 {
     var dbcontext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     dbcontext.Database.Migrate();
 
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    if (!await roleManager.RoleExistsAsync("Admin"))
-        await roleManager.CreateAsync(new IdentityRole("Admin"));
-    if (!await roleManager.RoleExistsAsync("Company"))
-        await roleManager.CreateAsync(new IdentityRole("Company"));
-    if (!await roleManager.RoleExistsAsync("JobSeeker"))
-        await roleManager.CreateAsync(new IdentityRole("JobSeeker"));
-
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project API v1"));
+    // Adat feltöltő
+    await DbSeeder.SeedAsync(app.Services);
 }
 
 app.UseHttpsRedirection();
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project API v1"));
 app.UseCors("AllowAllOrigins");
-
-
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapControllers();
 AuthEndpoints.MapAuthEndpoints(app,builder.Configuration);
 UserEndpoints.MapUserEndpoints(app);
 
