@@ -24,7 +24,7 @@ export default function CompanyJobsPage() {
   }
   const [q, setQ] = useState('')
   const [category, setCategory] = useState('')
-  const [showArchived, setShowArchived] = useState(true)
+  
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['company-jobs'],
@@ -43,8 +43,7 @@ export default function CompanyJobsPage() {
   const myJobs = (data?.items ?? []).filter(j => j.companyId === user.id)
   const filtered = myJobs.filter(j =>
     (!q || j.title.toLowerCase().includes(q.toLowerCase()) || j.description.toLowerCase().includes(q.toLowerCase())) &&
-    (!category || j.category === category) &&
-    (showArchived || !j.isArchived)
+    (!category || j.category === category)
   )
 
   return (
@@ -71,10 +70,6 @@ export default function CompanyJobsPage() {
             onChange={e => setCategory(e.target.value)}
           />
         </div>
-        <label className="inline-flex items-center gap-2 text-sm select-none">
-          <input type="checkbox" className="h-4 w-4" checked={showArchived} onChange={e => setShowArchived(e.target.checked)} />
-          Archiváltak mutatása
-        </label>
       </div>
 
       {filtered.length ? (

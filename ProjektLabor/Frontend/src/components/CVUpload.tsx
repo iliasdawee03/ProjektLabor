@@ -76,7 +76,7 @@ export default function CVUpload({ resumePath, onUpload, label = 'Önéletrajz f
       <div className="mb-3">
         <div className="flex items-start gap-2 text-sm font-medium text-yellow-800 bg-yellow-50 border border-yellow-200 rounded px-3 py-2 leading-tight">
           <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="text-yellow-600 min-w-[18px] mt-0.5"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
-          <span>Egy felhasználóhoz csak <b>egy</b> önéletrajz tölthető fel. Új feltöltés esetén a régi automatikusan törlődik.</span>
+          <span>Egy felhasználóhoz csak <b>egy</b> önéletrajz tölthető fel. Új feltöltés esetén a régi automatikusan felülírásra kerül.</span>
         </div>
       </div>
       <div className="mb-2 text-base font-semibold text-gray-800 flex items-center gap-2">

@@ -7,7 +7,7 @@
 
 Részletes projekt-dokumentáció (munkaterv, specifikációk, feladatfelosztás, eddigi munka):
 
-- docs/ProjektDokumentacio.md
+- Word fájlban
 
 Gyors indítás (lokálisan, Windows):
 
