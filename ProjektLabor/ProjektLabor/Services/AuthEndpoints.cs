@@ -42,11 +42,11 @@ public static class AuthEndpoints
         {
             var user = await userManager.FindByEmailAsync(req.Email);
             if (user == null)
-                return Results.BadRequest();
+                return Results.BadRequest("Invalid credentials");
 
             var result = await signInManager.CheckPasswordSignInAsync(user, req.Password, false);
             if (!result.Succeeded)
-                return Results.BadRequest();
+                return Results.BadRequest("Invalid credentials");
 
             var claims = new List<Claim>
             {
@@ -68,9 +68,21 @@ public static class AuthEndpoints
             var token = new JwtSecurityToken(
                 configuration["Jwt:Issuer"], configuration["Jwt:Audience"], claims, expires: expires, signingCredentials: creds
             );
-
-            return Results.Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            var expiresInSeconds = (int)(expires - DateTime.Now).TotalSeconds;
+            return Results.Ok(new { token = tokenString, expiresIn = expiresInSeconds });
         });
+
+        // Authenticated user info (mirror of /api/v1/users/me for consistency with spec)
+        app.MapGet("/api/v1/auth/me", async (
+            ClaimsPrincipal user,
+            UserManager<ApplicationUser> userManager) =>
+        {
+            var appUser = await userManager.GetUserAsync(user);
+            if (appUser == null) return Results.Unauthorized();
+            var roles = await userManager.GetRolesAsync(appUser);
+            return Results.Ok(new { id = appUser.Id, email = appUser.Email, fullName = appUser.FullName, roles });
+        }).RequireAuthorization();
 
 
     }

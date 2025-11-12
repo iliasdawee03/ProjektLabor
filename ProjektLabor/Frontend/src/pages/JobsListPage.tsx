@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { AppLink, Button } from '../components/Button'
 import { Card, CardHeader } from '../components/Card'
@@ -25,6 +25,26 @@ type Job = {
   isArchived?: boolean
 }
 
+function CompanySnippet({ companyId }: { companyId?: string }) {
+  const { user } = useAuth()
+  const { data } = useQuery({
+    queryKey: ['company-profile', companyId],
+    enabled: !!user && !!companyId,
+    queryFn: async () => (await api.get<{ id: number; userId: string; name: string; website?: string; contactEmail?: string; contactPhone?: string }>(`/api/v1/company-profiles/${companyId}`)).data
+  })
+  if (!user || !data) return null
+  return (
+    <div className="mt-2 text-xs text-gray-700">
+      <div className="font-medium text-gray-900">{data.name || 'Cég'}</div>
+      <div className="flex flex-col gap-0.5">
+        {data.website && <div>Web: <a href={data.website} target="_blank" rel="noreferrer" className="text-blue-700 underline">{data.website}</a></div>}
+        {data.contactEmail && <div>Email: {data.contactEmail}</div>}
+        {data.contactPhone && <div>Telefon: {data.contactPhone}</div>}
+      </div>
+    </div>
+  )
+}
+
 export default function JobsListPage() {
   const CATEGORY_LABELS = ['Informatika', 'Pénzügy', 'Értékesítés', 'Gyártás', 'Oktatás'] as const
   const formatCategory = (c: unknown) => {
@@ -32,8 +52,11 @@ export default function JobsListPage() {
     if (typeof c === 'string') return c
     return ''
   }
-  const [q, setQ] = useState('')
-  const [category, setCategory] = useState<string>('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialQ = useMemo(() => searchParams.get('q') ?? '', [searchParams])
+  const initialType = useMemo(() => searchParams.get('type') ?? '', [searchParams])
+  const [q, setQ] = useState(initialQ)
+  const [category, setCategory] = useState<string>(initialType)
   const [page, setPage] = useState(1)
   const pageSize = 12
   const qDebounced = useDebounce(q, 300)
@@ -47,6 +70,15 @@ export default function JobsListPage() {
       })
     ).data
   })
+
+  // Sync filters to URL params when they change
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (q.trim()) params.set('q', q.trim())
+    if (category) params.set('type', category)
+    if (page > 1) params.set('page', String(page))
+    setSearchParams(params, { replace: true })
+  }, [q, category, page, setSearchParams])
 
   return (
     <div className="space-y-4">
@@ -96,6 +128,7 @@ export default function JobsListPage() {
                   </div>
                 </CardHeader>
                 <div className="p-4">
+                  <CompanySnippet companyId={job.companyId} />
                   <p className="line-clamp-3 text-sm text-gray-700">{truncate(job.description, 240)}</p>
                   <div className="mt-3 flex gap-2 justify-end">
                     <AppLink href={`/jobs/${job.id}`} variant="primary" className="text-sm">Részletek</AppLink>

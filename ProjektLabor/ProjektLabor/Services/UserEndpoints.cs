@@ -10,6 +10,7 @@ public static class UserEndpoints
     public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
     public record UpdateRolesRequest(string[] Roles);
     public record LockUserRequest(bool Lock);
+    public record UserDto(string Id, string? Email, string? FullName, string[] Roles, bool Locked);
 
 
     public static void MapUserEndpoints(IEndpointRouteBuilder app)
@@ -63,25 +64,99 @@ public static class UserEndpoints
         }).RequireAuthorization();
 
         // Admin
-        /* TODO
-         (Admin) GET /api/v1/users
+        app.MapGet("/api/v1/users", async (
+            [FromQuery] string? role,
+            [FromQuery] int? page,
+            [FromQuery] int? pageSize,
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager) =>
+        {
+            var p = (page ?? 1) <= 0 ? 1 : (page ?? 1);
+            var ps = (pageSize ?? 10) <= 0 || (pageSize ?? 10) > 100 ? 10 : (pageSize ?? 10);
 
-            Auth: Admin
-            Query: role?=Admin|Company|JobSeeker, page?, pageSize?
-            Válasz: { items: UserDto[], total }
+            var query = userManager.Users.AsQueryable();
+            var total = query.Count();
 
-            (Admin) PATCH /api/v1/users/{id}/roles
+            var users = query
+                .OrderBy(u => u.Email)
+                .Skip((p - 1) * ps)
+                .Take(ps)
+                .ToList();
 
-            Auth: Admin
-            Body: { roles: string[] }
-            Válasz: 204
+            var items = new List<UserDto>(users.Count);
+            foreach (var u in users)
+            {
+                var rolesArr = (await userManager.GetRolesAsync(u)).ToArray();
+                var locked = u.LockoutEnabled && u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTimeOffset.UtcNow;
+                items.Add(new UserDto(u.Id, u.Email, u.FullName, rolesArr, locked));
+            }
 
-            (Admin) PATCH /api/v1/users/{id}/lock
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                var roleNorm = role.Trim();
+                items = items.Where(i => i.Roles.Contains(roleNorm)).ToList();
+                total = items.Count; // filtered total
+            }
 
-            Auth: Admin
-            Body: { lock: boolean }
-            Válasz: 204 
-         
-         */
+            return Results.Ok(new { items, total, page = p, pageSize = ps });
+        }).RequireAuthorization("AdminPolicy");
+
+        app.MapPatch("/api/v1/users/{id}/roles", async (
+            string id,
+            [FromBody] UpdateRolesRequest req,
+            ClaimsPrincipal current,
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager) =>
+        {
+            var currentUser = await userManager.GetUserAsync(current);
+            if (currentUser != null && currentUser.Id == id)
+                return Results.BadRequest("Cannot modify your own roles");
+
+            var user = await userManager.FindByIdAsync(id);
+            if (user == null) return Results.NotFound();
+
+            // Validate requested roles exist and are allowed
+            var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Admin", "Company", "JobSeeker" };
+            foreach (var r in req.Roles)
+            {
+                if (!allowed.Contains(r)) return Results.BadRequest($"Invalid role: {r}");
+            }
+
+            var currentRoles = await userManager.GetRolesAsync(user);
+            var removeRes = await userManager.RemoveFromRolesAsync(user, currentRoles);
+            if (!removeRes.Succeeded) return Results.BadRequest(removeRes.Errors);
+
+            if (req.Roles != null && req.Roles.Length > 0)
+            {
+                var addRes = await userManager.AddToRolesAsync(user, req.Roles);
+                if (!addRes.Succeeded) return Results.BadRequest(addRes.Errors);
+            }
+            return Results.NoContent();
+        }).RequireAuthorization("AdminPolicy");
+
+        app.MapPatch("/api/v1/users/{id}/lock", async (
+            string id,
+            [FromBody] LockUserRequest req,
+            ClaimsPrincipal current,
+            UserManager<ApplicationUser> userManager) =>
+        {
+            var currentUser = await userManager.GetUserAsync(current);
+            if (currentUser != null && currentUser.Id == id)
+                return Results.BadRequest("Cannot lock/unlock yourself");
+
+            var user = await userManager.FindByIdAsync(id);
+            if (user == null) return Results.NotFound();
+
+            await userManager.SetLockoutEnabledAsync(user, true);
+            if (req.Lock)
+            {
+                await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+            }
+            else
+            {
+                await userManager.SetLockoutEndDateAsync(user, null);
+            }
+            return Results.NoContent();
+        }).RequireAuthorization("AdminPolicy");
     }
 }

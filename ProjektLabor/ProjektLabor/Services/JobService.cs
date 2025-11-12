@@ -14,6 +14,8 @@ namespace ProjektLabor.Services
         Task<JobDto?> UpdateJobAsync(int id, JobDto dto, string userId, bool isAdmin);
         Task<bool> DeleteJobAsync(int id, string userId, bool isAdmin);
         Task<JobDto?> ModerateJobAsync(int id, bool approved, string? reason);
+        Task<(List<JobDto> Items, int Total)> GetPendingJobsAsync(int page, int pageSize);
+        Task<(List<JobDto> Items, int Total)> GetMyJobsAsync(string userId, int page, int pageSize);
     }
 
     public class JobService : IJobService
@@ -27,7 +29,8 @@ namespace ProjektLabor.Services
 
         public async Task<(List<JobDto> Items, int Total)> GetJobsAsync(string? q, string? location, Category? type, int page, int pageSize)
         {
-            var query = _context.Jobs.Where(j => !j.IsArchived).AsQueryable();
+            // Public listing: show only approved and not archived
+            var query = _context.Jobs.Where(j => !j.IsArchived && j.Approved).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(q))
                 query = query.Where(j => j.Title.Contains(q) || j.Description.Contains(q));
@@ -179,6 +182,60 @@ namespace ProjektLabor.Services
                 ModerationReason = job.ModerationReason,
                 CompanyId = job.CompanyId
             };
+        }
+
+        public async Task<(List<JobDto> Items, int Total)> GetPendingJobsAsync(int page, int pageSize)
+        {
+            var query = _context.Jobs.Where(j => !j.IsArchived && !j.Approved);
+            var total = await query.CountAsync();
+            var items = await query
+                .OrderBy(j => j.PostedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(j => new JobDto
+                {
+                    Id = j.Id,
+                    Title = j.Title,
+                    Company = j.Company,
+                    Location = j.Location,
+                    Description = j.Description,
+                    SalaryMin = j.SalaryMin,
+                    SalaryMax = j.SalaryMax,
+                    Category = j.Category,
+                    PostedAt = j.PostedAt,
+                    Approved = j.Approved,
+                    ModerationReason = j.ModerationReason,
+                    CompanyId = j.CompanyId
+                })
+                .ToListAsync();
+            return (items, total);
+        }
+
+        public async Task<(List<JobDto> Items, int Total)> GetMyJobsAsync(string userId, int page, int pageSize)
+        {
+            var query = _context.Jobs.Where(j => j.CompanyId == userId && !j.IsArchived);
+            var total = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(j => j.PostedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(j => new JobDto
+                {
+                    Id = j.Id,
+                    Title = j.Title,
+                    Company = j.Company,
+                    Location = j.Location,
+                    Description = j.Description,
+                    SalaryMin = j.SalaryMin,
+                    SalaryMax = j.SalaryMax,
+                    Category = j.Category,
+                    PostedAt = j.PostedAt,
+                    Approved = j.Approved,
+                    ModerationReason = j.ModerationReason,
+                    CompanyId = j.CompanyId
+                })
+                .ToListAsync();
+            return (items, total);
         }
     }
 }

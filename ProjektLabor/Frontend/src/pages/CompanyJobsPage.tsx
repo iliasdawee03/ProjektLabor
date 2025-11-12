@@ -28,7 +28,7 @@ export default function CompanyJobsPage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['company-jobs'],
-    queryFn: async () => (await api.get<{ items: Job[]; total: number }>('/api/v1/jobs', { params: { pageSize: 100 } })).data,
+    queryFn: async () => (await api.get<{ items: Job[]; total: number }>('/api/v1/jobs/mine', { params: { pageSize: 100 } })).data,
     enabled: !!user?.roles?.includes('Company')
   })
 
@@ -40,7 +40,7 @@ export default function CompanyJobsPage() {
   if (isLoading) return <Loading />;
   if (error) return <Centered><Alert type="error">Hiba történt</Alert></Centered>;
 
-  const myJobs = (data?.items ?? []).filter(j => j.companyId === user.id)
+  const myJobs = (data?.items ?? [])
   const filtered = myJobs.filter(j =>
     (!q || j.title.toLowerCase().includes(q.toLowerCase()) || j.description.toLowerCase().includes(q.toLowerCase())) &&
     (!category || j.category === category)
