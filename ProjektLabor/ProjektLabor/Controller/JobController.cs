@@ -40,6 +40,13 @@ namespace ProjektLabor.Controller
             {
                 return NotFound();
             }
+            // Hide unapproved jobs from public unless requester is admin or the owning company
+            var isAdmin = User.IsInRole("Admin");
+            var requesterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!job.Approved && !isAdmin && job.CompanyId != requesterId)
+            {
+                return NotFound();
+            }
             return Ok(job);
         }
 
@@ -48,6 +55,8 @@ namespace ProjektLabor.Controller
         public async Task<ActionResult<JobDto>> CreateJob([FromBody] CreateJobDto dto)
         {
             var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(companyId)) 
+                return Unauthorized();
             var created = await _jobService.CreateJobAsync(dto, companyId);
             return CreatedAtAction(nameof(GetJobById), new { id = created.Id }, created);
         }
@@ -58,7 +67,9 @@ namespace ProjektLabor.Controller
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var isAdmin = User.IsInRole("Admin");
-            var updated = await _jobService.UpdateJobAsync(id, dto, userId, isAdmin);
+            if (string.IsNullOrEmpty(userId) && !isAdmin) 
+                return Unauthorized();
+            var updated = await _jobService.UpdateJobAsync(id, dto, userId , isAdmin);
             if (updated == null)
             {
                 return NotFound();
@@ -72,6 +83,8 @@ namespace ProjektLabor.Controller
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var isAdmin = User.IsInRole("Admin");
+            if (string.IsNullOrEmpty(userId) && !isAdmin) 
+                return Unauthorized();
             var success = await _jobService.DeleteJobAsync(id, userId, isAdmin);
             if (!success)
             {
@@ -90,6 +103,31 @@ namespace ProjektLabor.Controller
                 return NotFound();
             }
             return Ok(updated);
+        }
+
+        // Admin: list pending jobs (unapproved)
+        [HttpGet("pending")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<object>> GetPendingJobs(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var (items, total) = await _jobService.GetPendingJobsAsync(page, pageSize);
+            return Ok(new { items, total, page, pageSize });
+        }
+
+        // Company: list own jobs including unapproved (not archived)
+        [HttpGet("mine")]
+        [Authorize(Roles = "Company,Admin")]
+        public async Task<ActionResult<object>> GetMyJobs(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var requesterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(requesterId)) 
+                return Unauthorized();
+            var (items, total) = await _jobService.GetMyJobsAsync(requesterId, page, pageSize);
+            return Ok(new { items, total, page, pageSize });
         }
 
         public class ModerateJobRequest

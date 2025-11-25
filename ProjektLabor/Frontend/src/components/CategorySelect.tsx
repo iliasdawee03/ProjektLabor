@@ -6,13 +6,14 @@ type Props = React.SelectHTMLAttributes<HTMLSelectElement> & {
   label?: string
   includeAllOption?: boolean // ha igaz, üres "Mind" opció is megjelenik
   error?: string
+  labelClassName?: string 
 }
 
-export function CategorySelect({ label, includeAllOption, error, className, ...rest }: Props) {
+export function CategorySelect({ label, includeAllOption, error, className, labelClassName, ...rest }: Props) {
   return (
     <div>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+        <label className={["block text-sm font-medium mb-1", labelClassName ?? 'text-gray-700'].join(' ')}>{label}</label>
       )}
       <select
         {...rest}

@@ -4,8 +4,9 @@ import RegisterPage from './pages/RegisterPage.tsx'
 import { ProtectedRoute } from './auth/ProtectedRoute.tsx'
 import { useAuth } from './auth/useAuth'
 import ProfilePage from './pages/ProfilePage.tsx'
-import AdminUsersPage from './pages/AdminUsersPage.tsx'
+import AdminDashboardPage from './pages/AdminDashboardPage.tsx'
 import JobsListPage from './pages/JobsListPage.tsx'
+import HomePage from './pages/HomePage'
 import JobDetailsPage from './pages/JobDetailsPage.tsx'
 import CreateJobPage from './pages/CreateJobPage'
 import CompanyJobsPage from './pages/CompanyJobsPage'
@@ -25,7 +26,7 @@ function App() {
             <nav className="hidden md:flex items-center gap-4 text-sm text-gray-700">
               <Link to="/" className="hover:text-gray-900">Kezdőlap</Link>
               <Link to="/jobs" className="hover:text-gray-900">Állások</Link>
-              {user && (
+              {user?.roles?.includes('JobSeeker') && (
                 <Link to="/applications/me" className="hover:text-gray-900">Jelentkezéseim</Link>
               )}
               {user?.roles?.includes('Company') && (
@@ -35,7 +36,7 @@ function App() {
                 </>
               )}
               {user?.roles?.includes('Admin') && (
-                <Link to="/admin/users" className="hover:text-gray-900">Admin</Link>
+                <Link to="/admin" className="hover:text-gray-900">Admin</Link>
               )}
             </nav>
           </div>
@@ -62,7 +63,7 @@ function App() {
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">
         <Routes>
-          <Route path="/" element={<JobsListPage />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/jobs" element={<JobsListPage />} />
@@ -83,7 +84,7 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/applications/me" element={
-            <ProtectedRoute>
+            <ProtectedRoute roles={['JobSeeker']}>
               <MyApplicationsPage />
             </ProtectedRoute>
           } />
@@ -102,9 +103,9 @@ function App() {
               <div>Dashboard (protected)</div>
             </ProtectedRoute>
           } />
-          <Route path="/admin/users" element={
+          <Route path="/admin" element={
             <ProtectedRoute roles={['Admin']}>
-              <AdminUsersPage />
+              <AdminDashboardPage />
             </ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/" />} />

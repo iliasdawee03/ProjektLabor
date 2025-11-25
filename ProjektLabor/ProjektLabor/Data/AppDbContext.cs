@@ -10,6 +10,9 @@ namespace ProjektLabor.Data
     {
         public DbSet<Job> Jobs { get; set; }
         public DbSet<Application> Applications { get; set; }
+    public DbSet<Report> Reports { get; set; }
+    public DbSet<CompanyRequest> CompanyRequests { get; set; }
+    public DbSet<CompanyProfile> CompanyProfiles { get; set; }
 
         override protected void OnModelCreating(ModelBuilder builder)
         {

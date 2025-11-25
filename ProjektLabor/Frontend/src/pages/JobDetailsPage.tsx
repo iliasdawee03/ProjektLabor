@@ -11,6 +11,9 @@ import toast from 'react-hot-toast'
 import { toMessage } from '../lib/errors'
 import Badge from '../components/Badge'
 import { formatDate } from '../lib/format'
+import ConfirmDialog from '../components/ConfirmDialog'
+import ReportDialog from '../components/ReportDialog'
+import { useState } from 'react'
 
 
 type Job = {
@@ -31,10 +34,18 @@ export default function JobDetailsPage() {
   const qc = useQueryClient()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [reportOpen, setReportOpen] = useState(false)
+  const [archiveOpen, setArchiveOpen] = useState(false)
   const { data, isLoading, error } = useQuery({
     queryKey: ['job', id],
     enabled: !!id,
     queryFn: async () => (await api.get<Job>(`/api/v1/jobs/${id}`)).data
+  })
+  // Company profile of the job's owner (requires auth)
+  const { data: companyProfile } = useQuery({
+    queryKey: ['company-profile', data?.companyId],
+    enabled: !!data?.companyId && !!user,
+    queryFn: async () => (await api.get<{ id: number; userId: string; name: string; website?: string; contactEmail?: string; contactPhone?: string; about?: string; updatedAt: string }>(`/api/v1/company-profiles/${data?.companyId}`)).data
   })
   // Get current user info (for resumePath)
   const { data: me, isLoading: meLoading } = useQuery({
@@ -80,6 +91,15 @@ export default function JobDetailsPage() {
     onError: (err: unknown) => toast.error(toMessage(err))
   })
 
+  const reportMutation = useMutation({
+    mutationFn: async (payload: { reason: string; details?: string }) => {
+      if (!id) throw new Error('Hiányzó azonosító')
+      await api.post(`/api/v1/reports`, { targetType: 0, targetId: String(id), reason: payload.reason, details: payload.details ?? '' })
+    },
+    onSuccess: () => toast.success('Jelentés elküldve'),
+    onError: (err: unknown) => toast.error(toMessage(err))
+  })
+
   if (isLoading || meLoading || appsLoading) return <Loading />;
   if (error || !data) return <Centered><Alert type="error">Nem található</Alert></Centered>;
 
@@ -107,12 +127,33 @@ export default function JobDetailsPage() {
             <h1 className="text-xl font-semibold">{data.title}</h1>
             <p className="text-sm text-gray-600">{`${data.location ?? ''} ${data.employmentType ? '• ' + data.employmentType : ''}`}</p>
           </div>
-          <Button variant="link" className="text-sm" onClick={() => navigate(-1)}>Vissza</Button>
+          <div className="flex items-center gap-2">
+            {user && (
+              <Button
+                variant="secondary"
+                className="text-sm"
+                onClick={() => setReportOpen(true)}
+                disabled={reportMutation.status === 'pending'}
+              >Jelentés</Button>
+            )}
+            <Button variant="link" className="text-sm" onClick={() => navigate(-1)}>Vissza</Button>
+          </div>
         </div>
       </CardHeader>
       <div className="p-4">
         {data.isArchived && (
           <div className="mb-3 text-yellow-800 bg-yellow-50 border border-yellow-200 rounded px-3 py-2 text-sm">Ez az álláshirdetés archiválva van.</div>
+        )}
+        {companyProfile && (
+          <div className="mb-4 rounded border border-gray-200 bg-gray-50 p-3">
+            <div className="font-medium">{companyProfile.name || 'Cég'}</div>
+            <div className="text-xs text-gray-700 flex flex-col gap-0.5">
+              {companyProfile.website && <div>Web: <a className="text-blue-700 underline" href={companyProfile.website} target="_blank" rel="noreferrer">{companyProfile.website}</a></div>}
+              {companyProfile.contactEmail && <div>Email: {companyProfile.contactEmail}</div>}
+              {companyProfile.contactPhone && <div>Telefon: {companyProfile.contactPhone}</div>}
+            </div>
+            {companyProfile.about && <p className="text-sm text-gray-800 mt-2 whitespace-pre-wrap">{companyProfile.about}</p>}
+          </div>
         )}
         <p className="whitespace-pre-wrap text-sm mb-2">{data.description}</p>
         <div className="flex gap-2 mb-4">
@@ -134,11 +175,7 @@ export default function JobDetailsPage() {
                   variant="danger"
                   className="text-sm"
                   disabled={archiveMutation.status === 'pending'}
-                  onClick={() => {
-                    if (confirm('Biztosan archiválod ezt az állást?')) {
-                      archiveMutation.mutate()
-                    }
-                  }}
+                  onClick={() => setArchiveOpen(true)}
                 >Archiválás</Button>
               )}
             </>
@@ -172,6 +209,20 @@ export default function JobDetailsPage() {
           </div>
         )}
       </div>
+      <ReportDialog
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        onSubmit={(payload) => reportMutation.mutate(payload)}
+      />
+      <ConfirmDialog
+        open={archiveOpen}
+        onClose={() => setArchiveOpen(false)}
+        title="Archiválás megerősítése"
+        description="Biztosan archiválod ezt az álláshirdetést? A hirdetés nem lesz elérhető a továbbiakban."
+        confirmText="Archiválás"
+        destructive
+        onConfirm={() => archiveMutation.mutate()}
+      />
     </Card>
   )
 }
