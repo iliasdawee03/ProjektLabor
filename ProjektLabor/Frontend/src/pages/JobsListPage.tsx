@@ -55,9 +55,13 @@ export default function JobsListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const initialQ = useMemo(() => searchParams.get('q') ?? '', [searchParams])
   const initialType = useMemo(() => searchParams.get('type') ?? '', [searchParams])
+  const initialPage = useMemo(() => {
+    const p = parseInt(searchParams.get('page') ?? '1', 10);
+    return isNaN(p) || p < 1 ? 1 : p;
+  }, [searchParams]);
   const [q, setQ] = useState(initialQ)
   const [category, setCategory] = useState<string>(initialType)
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(initialPage)
   const pageSize = 12
   const qDebounced = useDebounce(q, 300)
   const { user } = useAuth()
