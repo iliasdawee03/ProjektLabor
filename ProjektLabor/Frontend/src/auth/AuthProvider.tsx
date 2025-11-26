@@ -7,15 +7,21 @@ const TOKEN_KEY = 'pl_token'
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY))
   const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {
     if (token) {
+      setLoading(true)
       localStorage.setItem(TOKEN_KEY, token)
       // backend: GET /api/v1/users/me returns { id, email, fullName, roles }
-      api.get<User>('/api/v1/users/me').then((r: { data: User }) => setUser(r.data)).catch(() => setUser(null))
+      api.get<User>('/api/v1/users/me')
+        .then((r: { data: User }) => setUser(r.data))
+        .catch(() => setUser(null))
+        .finally(() => setLoading(false))
     } else {
       localStorage.removeItem(TOKEN_KEY)
       setUser(null)
+      setLoading(false)
     }
   }, [token])
 
@@ -31,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => setToken(null)
 
-  const value = useMemo(() => ({ user, token, login, register, logout }), [user, token, login, register])
+  const value = useMemo(() => ({ user, token, login, register, logout, loading }), [user, token, login, register, loading])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

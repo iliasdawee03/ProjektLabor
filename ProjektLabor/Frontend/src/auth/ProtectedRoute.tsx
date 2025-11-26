@@ -1,15 +1,20 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './useAuth'
+import { Centered, Loading } from '../components/Centered'
 
 //Ellenőrzi, hogy van-e bejelentkezett felhasználó (token).
 //Ha nincs token: átirányít a /login oldalra, és eltárolja, honnan jöttél (state.from), hogy belépés után vissza lehessen irányítani.
 
 export function ProtectedRoute({ children, roles }: { children: React.ReactElement, roles?: string[] }) {
-  const { token, user } = useAuth()
+  const { token, user, loading } = useAuth()
   const location = useLocation()
 
   if (!token) {
     return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  if (token && user === null && loading) {
+  if (loading) {
   }
 
   if (roles && roles.length > 0) {
