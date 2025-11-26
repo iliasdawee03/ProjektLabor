@@ -13,8 +13,9 @@ export function ProtectedRoute({ children, roles }: { children: React.ReactEleme
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
+  // If we have a token but the user info is still loading, don't redirect yet — show a loader.
   if (token && user === null && loading) {
-  if (loading) {
+    return <Centered><Loading /></Centered>
   }
 
   if (roles && roles.length > 0) {

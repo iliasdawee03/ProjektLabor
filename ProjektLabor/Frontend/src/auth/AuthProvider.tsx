@@ -7,7 +7,7 @@ const TOKEN_KEY = 'pl_token'
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY))
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(() => !!localStorage.getItem(TOKEN_KEY))
 
   useEffect(() => {
     if (token) {
