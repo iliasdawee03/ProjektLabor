@@ -28,13 +28,29 @@ builder.Services.AddScoped<IJobService, JobService>();
 
 
 
+var env = builder.Environment.EnvironmentName;
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    string connectionString;
+    ServerVersion serverVersion;
+
+    if (env == "DesignTime")
+    {
+        // Dummy érték csak migráció generáláshoz, nem csatlakozunk valódi DB-hez
+        connectionString = "Server=localhost;Port=3306;Database=Dummy;User=dummy;Password=dummy;";
+        serverVersion = new MySqlServerVersion(new Version(9, 0, 0));
+    }
+    else
+    {
+        connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                           ?? builder.Configuration["ConnectionStrings:DefaultConnection"]
                           ?? throw new InvalidOperationException("DefaultConnection is not configured");
 
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+        serverVersion = ServerVersion.AutoDetect(connectionString);
+    }
+
+    options.UseMySql(connectionString, serverVersion);
 });
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -116,17 +132,15 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 app.UseSwagger();
-
-
-
-
 using (var scope = app.Services.CreateScope())
 {
     var dbcontext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbcontext.Database.Migrate();
 
+    // MySQL-en hozza létre automatikusan a sémát, ha még nincs
+  //  await dbcontext.Database.EnsureCreatedAsync();
+    await dbcontext.Database.MigrateAsync();
     // Adat feltöltő
-    await DbSeeder.SeedAsync(app.Services);
+    //await DbSeeder.SeedAsync(app.Services);
 }
 
 app.UseHttpsRedirection();
