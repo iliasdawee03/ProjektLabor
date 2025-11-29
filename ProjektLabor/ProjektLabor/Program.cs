@@ -140,21 +140,21 @@ using (var scope = app.Services.CreateScope())
 {
     var dbcontext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    // Várakozás MySQL indulására retry-val (EnsureCreated alap sémához)
+    // Migrate (táblák létrehozása) retry-val – EnsureCreated nem használható migrációk megléte esetén
     const int maxAttempts = 10;
     for (int attempt = 1; attempt <= maxAttempts; attempt++)
     {
         try
         {
-            await dbcontext.Database.EnsureCreatedAsync();
-            break;
+            await dbcontext.Database.MigrateAsync();
+            break; // sikerült
         }
-        catch (Exception ex) when (attempt < maxAttempts)
+        catch (Exception) when (attempt < maxAttempts)
         {
             await Task.Delay(TimeSpan.FromSeconds(5));
         }
     }
-    // Seeding továbbra is kikapcsolva
+    // Seeding kikapcsolva ideiglenesen
     // await DbSeeder.SeedAsync(app.Services);
 }
 
