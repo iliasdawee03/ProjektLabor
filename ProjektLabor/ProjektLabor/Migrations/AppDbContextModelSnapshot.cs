@@ -17,7 +17,6 @@ namespace ProjektLabor.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("Identity")
                 .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
@@ -46,7 +45,7 @@ namespace ProjektLabor.Migrations
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("AspNetRoles", "Identity");
+                    b.ToTable("AspNetRoles");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -71,7 +70,7 @@ namespace ProjektLabor.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims", "Identity");
+                    b.ToTable("AspNetRoleClaims");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -96,7 +95,7 @@ namespace ProjektLabor.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims", "Identity");
+                    b.ToTable("AspNetUserClaims");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -118,7 +117,7 @@ namespace ProjektLabor.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", "Identity");
+                    b.ToTable("AspNetUserLogins");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -133,7 +132,7 @@ namespace ProjektLabor.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles", "Identity");
+                    b.ToTable("AspNetUserRoles");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -152,7 +151,7 @@ namespace ProjektLabor.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", "Identity");
+                    b.ToTable("AspNetUserTokens");
                 });
 
             modelBuilder.Entity("ProjektLabor.Data.ApplicationUser", b =>
@@ -226,7 +225,7 @@ namespace ProjektLabor.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("AspNetUsers", "Identity");
+                    b.ToTable("AspNetUsers");
                 });
 
             modelBuilder.Entity("ProjektLabor.Data.Entity.Application", b =>
@@ -257,7 +256,7 @@ namespace ProjektLabor.Migrations
 
                     b.HasIndex("JobId");
 
-                    b.ToTable("Applications", "Identity");
+                    b.ToTable("Applications");
                 });
 
             modelBuilder.Entity("ProjektLabor.Data.Entity.CompanyProfile", b =>
@@ -298,7 +297,7 @@ namespace ProjektLabor.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CompanyProfiles", "Identity");
+                    b.ToTable("CompanyProfiles");
                 });
 
             modelBuilder.Entity("ProjektLabor.Data.Entity.CompanyRequest", b =>
@@ -345,7 +344,7 @@ namespace ProjektLabor.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CompanyRequests", "Identity");
+                    b.ToTable("CompanyRequests");
                 });
 
             modelBuilder.Entity("ProjektLabor.Data.Entity.Job", b =>
@@ -399,7 +398,7 @@ namespace ProjektLabor.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Jobs", "Identity");
+                    b.ToTable("Jobs");
                 });
 
             modelBuilder.Entity("ProjektLabor.Data.Entity.Report", b =>
@@ -449,7 +448,7 @@ namespace ProjektLabor.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Reports", "Identity");
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -12,15 +12,11 @@ namespace ProjektLabor.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.EnsureSchema(
-                name: "Identity");
-
             migrationBuilder.AlterDatabase()
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
-                schema: "Identity",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false)
@@ -40,7 +36,6 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUsers",
-                schema: "Identity",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false)
@@ -80,7 +75,6 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateTable(
                 name: "CompanyProfiles",
-                schema: "Identity",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -107,7 +101,6 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateTable(
                 name: "CompanyRequests",
-                schema: "Identity",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -136,7 +129,6 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Jobs",
-                schema: "Identity",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -168,7 +160,6 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Reports",
-                schema: "Identity",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -198,7 +189,6 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
-                schema: "Identity",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -216,7 +206,6 @@ namespace ProjektLabor.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
                         column: x => x.RoleId,
-                        principalSchema: "Identity",
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -225,7 +214,6 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserClaims",
-                schema: "Identity",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -243,7 +231,6 @@ namespace ProjektLabor.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserClaims_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalSchema: "Identity",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -252,7 +239,6 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserLogins",
-                schema: "Identity",
                 columns: table => new
                 {
                     LoginProvider = table.Column<string>(type: "varchar(255)", nullable: false)
@@ -270,7 +256,6 @@ namespace ProjektLabor.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserLogins_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalSchema: "Identity",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -279,7 +264,6 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
-                schema: "Identity",
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "varchar(255)", nullable: false)
@@ -293,14 +277,12 @@ namespace ProjektLabor.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
                         column: x => x.RoleId,
-                        principalSchema: "Identity",
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalSchema: "Identity",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -309,7 +291,6 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserTokens",
-                schema: "Identity",
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "varchar(255)", nullable: false)
@@ -327,7 +308,6 @@ namespace ProjektLabor.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalSchema: "Identity",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -336,7 +316,6 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Applications",
-                schema: "Identity",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -355,7 +334,6 @@ namespace ProjektLabor.Migrations
                     table.ForeignKey(
                         name: "FK_Applications_Jobs_JobId",
                         column: x => x.JobId,
-                        principalSchema: "Identity",
                         principalTable: "Jobs",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -364,50 +342,42 @@ namespace ProjektLabor.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Applications_JobId",
-                schema: "Identity",
                 table: "Applications",
                 column: "JobId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
-                schema: "Identity",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "RoleNameIndex",
-                schema: "Identity",
                 table: "AspNetRoles",
                 column: "NormalizedName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
-                schema: "Identity",
                 table: "AspNetUserClaims",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserLogins_UserId",
-                schema: "Identity",
                 table: "AspNetUserLogins",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserRoles_RoleId",
-                schema: "Identity",
                 table: "AspNetUserRoles",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
-                schema: "Identity",
                 table: "AspNetUsers",
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
-                schema: "Identity",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
@@ -417,52 +387,40 @@ namespace ProjektLabor.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Applications",
-                schema: "Identity");
+                name: "Applications");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoleClaims",
-                schema: "Identity");
+                name: "AspNetRoleClaims");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserClaims",
-                schema: "Identity");
+                name: "AspNetUserClaims");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserLogins",
-                schema: "Identity");
+                name: "AspNetUserLogins");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserRoles",
-                schema: "Identity");
+                name: "AspNetUserRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserTokens",
-                schema: "Identity");
+                name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "CompanyProfiles",
-                schema: "Identity");
+                name: "CompanyProfiles");
 
             migrationBuilder.DropTable(
-                name: "CompanyRequests",
-                schema: "Identity");
+                name: "CompanyRequests");
 
             migrationBuilder.DropTable(
-                name: "Reports",
-                schema: "Identity");
+                name: "Reports");
 
             migrationBuilder.DropTable(
-                name: "Jobs",
-                schema: "Identity");
+                name: "Jobs");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles",
-                schema: "Identity");
+                name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers",
-                schema: "Identity");
+                name: "AspNetUsers");
         }
     }
 }

@@ -54,6 +54,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, serverVersion, mySqlOptions =>
     {
         mySqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null);
+        mySqlOptions.SchemaBehavior(MySqlSchemaBehavior.Ignore);
     });
 });
 
