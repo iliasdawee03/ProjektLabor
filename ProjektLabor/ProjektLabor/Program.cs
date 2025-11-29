@@ -155,8 +155,16 @@ using (var scope = app.Services.CreateScope())
             await Task.Delay(TimeSpan.FromSeconds(5));
         }
     }
-    // Seeding kikapcsolva ideiglenesen
-    // await DbSeeder.SeedAsync(app.Services);
+    // Seeding: létrehozza szerepköröket, demo felhasználókat és mintákat.
+    try
+    {
+        await DbSeeder.SeedAsync(app.Services);
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Seeder hiba – az alkalmazás fut tovább szerepkörök nélkül.");
+    }
 }
 
 app.UseHttpsRedirection();
