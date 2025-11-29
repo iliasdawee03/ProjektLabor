@@ -2,16 +2,17 @@ version: "3.9"
 
 services:
   db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mysql:9.0-oracle
     container_name: pl_db
     environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "NehezJelszo123!!"
-      MSSQL_PID: "Express"
+      MYSQL_DATABASE: "ProjektLabor"
+      MYSQL_USER: "pl_user"
+      MYSQL_PASSWORD: "NehezJelszo123!!"
+      MYSQL_ROOT_PASSWORD: "RootNehezJelszo123!!"
     ports:
-      - "1433:1433"
+      - "3306:3306"
     volumes:
-      - pl_mssql_data:/var/opt/mssql
+      - pl_mysql_data:/var/lib/mysql
     restart: unless-stopped
 
   backend:
@@ -23,7 +24,7 @@ services:
       - db
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=ProjektLabor;User Id=sa;Password=NehezJelszo123!!;TrustServerCertificate=True;"
+      ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=ProjektLabor;User=pl_user;Password=NehezJelszo123!!;"
       Jwt__Key: "uvdnAMv65gxJAb48iwpdBmZ28izwBeGS"
       Jwt__Issuer: "ProjektLabor"
       Jwt__Audience: "ProjektLaborClient"
@@ -46,4 +47,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  pl_mssql_data:
+  pl_mysql_data:

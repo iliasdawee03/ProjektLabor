@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProjektLabor.Data;
@@ -28,7 +29,13 @@ builder.Services.AddScoped<IJobService, JobService>();
 
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                          ?? builder.Configuration["ConnectionStrings:DefaultConnection"]
+                          ?? throw new InvalidOperationException("DefaultConnection is not configured");
+
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+});
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
