@@ -44,10 +44,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     else
     {
         connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                          ?? builder.Configuration["ConnectionStrings:DefaultConnection"]
-                          ?? throw new InvalidOperationException("DefaultConnection is not configured");
+                      ?? builder.Configuration["ConnectionStrings:DefaultConnection"]
+                      ?? throw new InvalidOperationException("DefaultConnection is not configured");
 
-        serverVersion = ServerVersion.AutoDetect(connectionString);
+        // Fix MySQL server verzió, hogy ne AutoDetect-tel próbáljon csatlakozni induláskor
+        serverVersion = new MySqlServerVersion(new Version(9, 0, 1));
     }
 
     options.UseMySql(connectionString, serverVersion);
