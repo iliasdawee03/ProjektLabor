@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: pl_db
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "NehezJelszo123!!"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - pl_mssql_data:/var/opt/mssql
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./ProjektLabor
+      dockerfile: ProjektLabor/Dockerfile
+    container_name: pl_backend
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=ProjektLabor;User Id=sa;Password=NehezJelszo123!;TrustServerCertificate=True;"
+      Jwt__Key: "super_secret_dev_key_at_least_32_chars_long"
+      Jwt__Issuer: "ProjektLabor"
+      Jwt__Audience: "ProjektLaborClient"
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./ProjektLabor
+      dockerfile: Frontend/Dockerfile
+    container_name: pl_frontend
+    depends_on:
+      - backend
+    environment:
+      # Vite API base should point to nginx → backend
+      VITE_API_BASE: "/api/v1"
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+volumes:
+  pl_mssql_data:
