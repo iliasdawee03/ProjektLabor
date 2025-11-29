@@ -51,7 +51,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         serverVersion = new MySqlServerVersion(new Version(9, 0, 1));
     }
 
-    options.UseMySql(connectionString, serverVersion);
+    options.UseMySql(connectionString, serverVersion, mySqlOptions =>
+    {
+        mySqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null);
+    });
 });
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -137,11 +140,22 @@ using (var scope = app.Services.CreateScope())
 {
     var dbcontext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    // MySQL-en hozza létre automatikusan a sémát, ha még nincs
-  //  await dbcontext.Database.EnsureCreatedAsync();
-    await dbcontext.Database.MigrateAsync();
-    // Adat feltöltő
-    //await DbSeeder.SeedAsync(app.Services);
+    // Várakozás MySQL indulására retry-val (EnsureCreated alap sémához)
+    const int maxAttempts = 10;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            await dbcontext.Database.EnsureCreatedAsync();
+            break;
+        }
+        catch (Exception ex) when (attempt < maxAttempts)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+    }
+    // Seeding továbbra is kikapcsolva
+    // await DbSeeder.SeedAsync(app.Services);
 }
 
 app.UseHttpsRedirection();
