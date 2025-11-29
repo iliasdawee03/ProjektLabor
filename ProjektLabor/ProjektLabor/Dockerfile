@@ -11,12 +11,12 @@ ENV ASPNETCORE_URLS=http://+:8080
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copy csproj and restore as distinct layers
-COPY ProjektLabor/ProjektLabor/ProjektLabor.csproj ./
+# IMPORTANT: docker-compose build context is ./ProjektLabor, so the csproj is directly here
+COPY ProjektLabor.csproj ./
 RUN dotnet restore "ProjektLabor.csproj"
 
-# Copy the remaining source
-COPY ProjektLabor/ProjektLabor/. ./
+# Copy the remaining source from the current context
+COPY . ./
 
 RUN dotnet publish "ProjektLabor.csproj" -c Release -o /app/publish /p:UseAppHost=false
 

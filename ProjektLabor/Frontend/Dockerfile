@@ -4,6 +4,7 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
+# docker-compose build context is ./ProjektLabor, so Frontend/ is our project root here
 COPY Frontend/package.json Frontend/package-lock.json* ./
 RUN npm install
 

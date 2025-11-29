@@ -23,8 +23,8 @@ services:
       - db
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=ProjektLabor;User Id=sa;Password=NehezJelszo123!;TrustServerCertificate=True;"
-      Jwt__Key: "super_secret_dev_key_at_least_32_chars_long"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=ProjektLabor;User Id=sa;Password=NehezJelszo123!!;TrustServerCertificate=True;"
+      Jwt__Key: ${JWT_KEY}
       Jwt__Issuer: "ProjektLabor"
       Jwt__Audience: "ProjektLaborClient"
     ports:
@@ -40,7 +40,7 @@ services:
       - backend
     environment:
       # Vite API base should point to nginx → backend
-      VITE_API_BASE: "/api/v1"
+      VITE_API_BASE_URL: "/api/v1"
     ports:
       - "80:80"
     restart: unless-stopped
