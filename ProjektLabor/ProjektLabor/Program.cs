@@ -24,7 +24,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped<IApplicationService, ApplicationService>();
 builder.Services.AddScoped<IJobService, JobService>();
-
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 builder.Services.AddDbContext<AppDbContext>(options =>

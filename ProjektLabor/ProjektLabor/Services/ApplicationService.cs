@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProjektLabor.Data;
 using ProjektLabor.Data.Dto;
@@ -16,10 +17,17 @@ namespace ProjektLabor.Services
     public class ApplicationService : IApplicationService
     {
         private readonly AppDbContext _context;
-
-        public ApplicationService(AppDbContext context)
+        private readonly IEmailService _emailService; 
+        private readonly UserManager<ApplicationUser> _userManager; 
+        
+        public ApplicationService(
+            AppDbContext context,
+            IEmailService emailService, 
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _emailService = emailService;
+            _userManager = userManager;
         }
 
         public async Task<ApplicationDto> CreateApplicationAsync(int jobId, string userId, string? resumeId)
@@ -35,6 +43,25 @@ namespace ProjektLabor.Services
             _context.Applications.Add(application);
             await _context.SaveChangesAsync();
 
+            var job = await _context.Jobs.FindAsync(jobId);
+            if (job != null)
+            {
+                var companyUser = await _userManager.FindByIdAsync(job.CompanyId);
+                var applicantUser = await _userManager.FindByIdAsync(userId);
+
+                if (companyUser != null && !string.IsNullOrEmpty(companyUser.Email))
+                {
+                    var subject = $"Új jelentkező: {job.Title}";
+                    var body = $@"
+                        <h1>Új jelentkezés érkezett</h1>
+                        <p>A(z) <b>{job.Title}</b> álláshirdetésre új jelentkezés érkezett.</p>
+                        <p>Jelentkező: {applicantUser?.FullName ?? "Névtelen"} ({applicantUser?.Email})</p>
+                        <p>Kérjük, jelentkezzen be az Álláshirdető portálra a részletekért.</p>
+                    ";
+                    await _emailService.SendEmailAsync(companyUser.Email, subject, body);
+                }
+            }
+            
             var jobTitle = await _context.Jobs.Where(j => j.Id == application.JobId).Select(j => j.Title).FirstOrDefaultAsync();
 
             return new ApplicationDto
@@ -130,10 +157,30 @@ namespace ProjektLabor.Services
             {
                 return null;
             }
-
+            
+            bool statusChanged = application.Status != newStatus;
             application.Status = newStatus;
             await _context.SaveChangesAsync();
 
+            if (statusChanged && (newStatus == Status.Accepted || newStatus == Status.Rejected))
+            {
+                var applicant = await _userManager.FindByIdAsync(application.UserId);
+                if (applicant != null && !string.IsNullOrEmpty(applicant.Email))
+                {
+                    string statusHu = newStatus == Status.Accepted ? "Elfogadva" : "Elutasítva";
+                    string color = newStatus == Status.Accepted ? "green" : "red";
+                    
+                    var subject = $"Jelentkezés állapota: {statusHu}";
+                    var body = $@"
+                        <h2>Tisztelt {applicant.FullName}!</h2>
+                        <p>A(z) <b>{application.Job.Title}</b> állásra leadott jelentkezésének státusza megváltozott.</p>
+                        <p>Új státusz: <b style='color:{color}'>{statusHu}</b></p>
+                        <p>További információért keresse a céget vagy lépjen be az oldalra.</p>
+                    ";
+                    await _emailService.SendEmailAsync(applicant.Email, subject, body);
+                }
+            }
+            
             return new ApplicationDto
             {
                 Id = application.Id,

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjektLabor.Data;
 using ProjektLabor.Data.Entity;
 using System.Security.Claims;
+using ProjektLabor.Services;
 
 namespace ProjektLabor.Controller
 {
@@ -14,11 +15,12 @@ namespace ProjektLabor.Controller
     {
         private readonly AppDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-
-        public CompanyRequestController(AppDbContext context, UserManager<ApplicationUser> userManager)
+        private readonly IEmailService _emailService;
+        public CompanyRequestController(AppDbContext context, UserManager<ApplicationUser> userManager, IEmailService emailService)
         {
             _context = context;
             _userManager = userManager;
+            _emailService = emailService;
         }
 
         public record CreateRequestDto(string CompanyName, string? Website, string? Message);
@@ -105,25 +107,36 @@ namespace ProjektLabor.Controller
             r.DecidedByUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             await _context.SaveChangesAsync();
 
+            var user = await _userManager.FindByIdAsync(r.UserId);
+
             if (dto.Status == CompanyRequestStatus.Approved)
             {
-                var user = await _userManager.FindByIdAsync(r.UserId);
                 if (user != null)
                 {
-                    // Switch role from 'JobSeeker' to 'Company' (preserve other roles like 'Admin')
+                    // Switch role from 'JobSeeker' to 'Company'
                     var roles = await _userManager.GetRolesAsync(user);
-
                     if (roles.Contains("JobSeeker"))
-                    {
                         await _userManager.RemoveFromRoleAsync(user, "JobSeeker");
-                    }
-
                     if (!roles.Contains("Company"))
-                    {
                         await _userManager.AddToRoleAsync(user, "Company");
-                    }
                 }
             }
+
+            // Logic for Notification 3: Notify User about Decision
+            if (user != null && !string.IsNullOrEmpty(user.Email))
+            {
+                var statusStr = dto.Status == CompanyRequestStatus.Approved ? "Jóváhagyva" : "Elutasítva";
+                var subject = $"Cégkérelem: {statusStr}";
+                var noteHtml = !string.IsNullOrEmpty(dto.Note) ? $"<p>Megjegyzés: {dto.Note}</p>" : "";
+                var body = $@"
+                    <h2>Cég jogosultság igénylés</h2>
+                    <p>A(z) {r.CompanyName} nevében benyújtott kérelmét adminisztrátorunk elbírálta.</p>
+                    <p>Döntés: <b>{statusStr}</b></p>
+                    {noteHtml}
+                ";
+                await _emailService.SendEmailAsync(user.Email, subject, body);
+            }
+
             return NoContent();
         }
     }

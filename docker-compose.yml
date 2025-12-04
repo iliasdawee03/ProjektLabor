@@ -14,6 +14,14 @@ services:
       - pl_mssql_data:/var/opt/mssql
     restart: unless-stopped
 
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    container_name: pl_smtp
+    ports:
+      - "5000:80"   # Web UI
+      - "2525:25"   # SMTP Port
+    restart: unless-stopped
+
   backend:
     build:
       context: ./ProjektLabor
